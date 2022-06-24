@@ -1,0 +1,6 @@
+.idea
+venv
+__pycache__
+
+/main/migrations/*
+!/main/migrations/__init__.py

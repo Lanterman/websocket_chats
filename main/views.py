@@ -21,5 +21,8 @@ def main_page(request):
 def chat_detail(request, chat_slug):
     """Chat detail"""
 
-    context = {"chat_slug": chat_slug}
+    print("сделать логику прочитаных сообщений в chat_detail.html")
+    chat = Chat.objects.get(slug=chat_slug)
+    chat_messages = Message.objects.filter(chat_id=chat.id).select_related("owner_id").prefetch_related("is_read")
+    context = {"chat": chat, "chat_messages": chat_messages}
     return render(request, "main/chat_detail.html", context)

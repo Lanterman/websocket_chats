@@ -22,13 +22,13 @@ class Chat(models.Model):
         return f"{self.id} - owner_id: {self.name}"
 
     def get_absolute_url(self):
-        return reverse('chat', kwargs={'chat_slug': self.slug})
+        return reverse('chat_detail', kwargs={'chat_slug': self.slug})
 
 
 class Message(models.Model):
     """Chat message"""
     message = models.TextField(verbose_name="message", blank=True)
-    is_read = models.BooleanField(verbose_name='is_read ', default=False)  # сделать manytomany для user, если нет пользователя в поле, значит не прочитано
+    is_read = models.ManyToManyField(User, verbose_name='is_read')
     pub_date = models.DateTimeField(verbose_name="set_data", auto_now_add=True)
     owner_id = models.ForeignKey(User, verbose_name="owner", on_delete=models.SET_NULL, related_name="user_messages",
                                  null=True)
@@ -39,4 +39,4 @@ class Message(models.Model):
         verbose_name_plural = "Messages"
 
     def __str__(self):
-        return f"Chat_id: {self.chat_id} - owner_id: {self.owner_id} - message_id: {self.pk}"
+        return f"Chat_id: {self.chat_id}- message_id: {self.pk}"

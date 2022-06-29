@@ -25,13 +25,14 @@ class AdminChat(admin.ModelAdmin):
 
 @admin.register(Message)
 class AdminMessage(admin.ModelAdmin):
-    list_display = ('id', 'message', 'is_read', 'pub_date')
+    list_display = ('id', 'message', 'pub_date')
     list_display_links = ('id', 'message')
-    fields = ('message', 'is_read', 'owner_id', 'chat_id')
+    fields = ('message', 'owner_id', 'chat_id', 'is_read')
     search_fields = ('message',)
     list_filter = ('message', 'pub_date')
     list_max_show_all = 5
     list_per_page = 10
+    raw_id_fields = ('is_read',)
     actions = ['make_private', 'make_open']
 
     @admin.action(description='Прочитать сообщения')

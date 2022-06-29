@@ -5,24 +5,20 @@
     <title>Title</title>
 </head>
 <body>
-    <h1>Hello in the chat list!</h1>
+    <h1>Добро пожаловать в список чатов!</h1>
     <h2>Вы вошли как: <i><a href="">{{ request.user.get_full_name|default:request.user.username }}</a></i></h2><br>
     <h2>Мои чаты</h2>
     <ul>
-        {% for chat in chats %}
+        {% for chat in chat_list %}
             <li>
-                <a href="">
-                    {{ chat.name }}
-                    {% if chat.new_mes %}
-                        {{ chat.new_mes }}
+                <a href="{{ chat.0.get_absolute_url }}">
+                    {{ chat.0.name }}
+                    {% if chat.1 %}
+                        ({{ chat.1 }})
                     {% endif %}
                 </a>
             </li>
         {% endfor %}
     </ul>
-
-<!--    {{ chat_id|json_script:"chat_id" }}-->
-<!--    {{ user.pk|json_script:"user_pk" }}-->
-    <script src="/static/main/js/main_page.js"></script>
 </body>
 </html>

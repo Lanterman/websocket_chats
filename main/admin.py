@@ -33,12 +33,12 @@ class AdminMessage(admin.ModelAdmin):
     list_max_show_all = 5
     list_per_page = 10
     raw_id_fields = ('is_read',)
-    actions = ['make_private', 'make_open']
+    actions = ['make_read', 'make_unread']
 
     @admin.action(description='Прочитать сообщения')
     def make_read(self, request, queryset):
-        queryset.update(is_read=True)
+        [message.is_read.add(request.user) for message in queryset]
 
     @admin.action(description='Сделать непрочитаными')
     def make_unread(self, request, queryset):
-        queryset.update(is_read=False)
+        [message.is_read.remove(request.user) for message in queryset if message.owner_id_id != request.user.id]

@@ -21,22 +21,25 @@
     </div>
 
     {% if chat_messages %}
-        <div class="messages">
-            {% for message in chat_messages %}
-            {{ request.user}}  {{message.owner_id }}
-<!--                <div class="unreaded {% if request.user != message.owner_id and request.user not in message.is_read.all %}messages_us{% endif %}"><input type="hidden" value="{{ message.owner_id }}">-->
-                    <div class="reply-body">
-                        <strong>
-                            <a class="username" href="{{ message.owner_id.get_absolute_url }}">
-                                {{ message.owner_id.username }}
-                            </a>
-                        </strong>
-                        <span class="pub_date">{{ message.pub_date|naturaltime }}</span>
-                        <p class="text">{{ message.message|linebreaksbr|safe}}</p>
-                    </div>
+    <div class="messages">
+        {% for message in chat_messages %}
+            <div id="message" class="{% if request.user.id == message.owner_id_id and message.is_read.count != 1 or request.user.id != message.owner_id_id%}
+                                        messages_us
+                                     {% else %}
+                                        unreaded
+                                     {% endif %}"><input type="hidden" value="{{ message.owner_id_id }}">
+                <div class="reply-body">
+                    <strong>
+                        <a class="username" href="{{ message.owner_id.get_absolute_url }}">
+                            {{ message.owner_id.username }}
+                        </a>
+                    </strong>
+                    <span class="pub_date">{{ message.pub_date|naturaltime }}</span>
+                    <p class="text">{{ message.message|linebreaksbr|safe}}</p>
                 </div>
-            {% endfor %}
-        </div>
+            </div>
+        {% endfor %}
+    </div>
     {% else %}
         <div class="messages">
             <p class="no_messages">У вас пока нет сообщений!</p>
@@ -49,6 +52,6 @@
     </div>
 
     {{ chat.slug|json_script:"chat_slug" }}
-<script src="/static/main/js/chat_detail.js"></script>
+    <script src="/static/main/js/chat_detail.js"></script>
 </body>
 </html>

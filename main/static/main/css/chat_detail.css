@@ -30,12 +30,11 @@ body {
     margin: 20px 300px 0 400px;
     background-color: #FFFFF0;
     box-shadow: 0 0 10px #666;
-
 }
 
-.messages_us, .unreaded  {
-    margin: 15px 10px 20px 40px;
-    padding: 0px 0px 12px 0px;
+#message {
+    margin: 15px 10px 20px 20px;
+    padding: 10px 0px;
 }
 
 .messages .messages_us, .messages .unreaded {
@@ -43,7 +42,7 @@ body {
 }
 
 .reply-body {
-    margin-left: 30px;
+    margin-left: 20px;
 }
 
 .reply-body .username {
@@ -63,15 +62,15 @@ body {
     margin: 6px 15px 0 0;
 }
 
-.reply-body .text, .p #ap, #comments #p2 {
+.reply-body .text {
     word-wrap: break-word;
 }
 
 .reply-body .text {
     font-size: 18px;
-    margin: 10px 23px 0 0;
+    margin: 10px 20px 0 0;
     word-wrap: break-word;
-    padding-left: 20px;
+    padding-left: 15px;
 }
 
 .unreaded {
@@ -102,48 +101,3 @@ body {
     padding: 7px;
     resize: none;
 }
-
-.chat {
-    text-decoration: None;
-    border: solid 1px gray;
-    box-shadow: 0 0 10px #666;
-    float: right;
-    height: 100px;
-    width: 900px;
-    margin: -60px 250px 80px 0px;
-    background-color: #7FFF00;
-    padding: 6px 6px 8px 6px;
-    color: black;
-}
-
-.chat:hover {
-    background-color: #F8F8FF;
-}
-
-.chat #pub_date {
-    float: right;
-    font-size: 15px;
-    color: #696969;
-    margin: 12px 25px 0 0;
-}
-
-.chat img {
-    margin: -70;
-    width: 100px;
-    height: 100px;
-    float: left;
-    border-radius: 60px;
-    border: solid 1px black;
-}
-
-.chat #us_name {
-    margin: 10px 0 10px 130px;
-    font-size: 25px;
-}
-
-.chat #last_messages {
-    float: bottom;
-    margin: 16px 50px 0 130px;
-    font-size: 20px;
-    color: blue;
-    padding: 4px 0;

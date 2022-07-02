@@ -4,22 +4,47 @@ const chatDetailSocket = new WebSocket('ws://' + window.location.host + '/ws/cha
 
 chatDetailSocket.onopen = function(e) {
     console.log("Ok");
+    chatDetailSocket.send(JSON.stringify({}));
 };
 
 chatDetailSocket.onclose = function(e) {
-    console.error("Websocket disconnect!")
+    console.error("Websocket disconnect!");
 };
 
 chatDetailSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
-    const chats_info = data.chats_info;
+    const message_info = data.message_info;
 
-    const ul_html = document.querySelector("#ul");
-    for (let item in chats_info) {
-        ul_html.innerHTML += `<li>
-                                  <a href="">
-                                      ${chats_info[item].name} ${chats_info[item].count_messages}
-                                  </a>
-                              </li>`;
+    if (message_info != "connect") {
+        const no_messages = document.querySelector(".no_messages");
+        if (no_messages) {
+            no_messages.remove();
+        };
+        const messages_html = document.querySelector(".messages");
+        messages_html.innerHTML += `<div id="message" class="unreaded"><input type="hidden" value=${data.user_id}>
+                                        <div class="reply-body">
+                                            <strong>
+                                                <a class="username" href=${message_info.owner_id}>
+                                                    ${ message_info.owner_name}
+                                                </a>
+                                            </strong>
+                                            <span class="pub_date">Только что</span>
+                                            <p class="text">${message_info.message}</p>
+                                        </div>
+                                    </div>`;
     };
+    let messages = document.querySelectorAll(".unreaded")
+    for (let message of messages) {
+        if (message.firstChild.value != data.user_id) {
+            message.style.backgroundColor = "#FFFFF0";
+        };
+    };
+};
+
+document.querySelector("#chat-message-submit").onclick = function(e) {
+    const html_message = document.querySelector("#chat-message-input");
+    chatDetailSocket.send(JSON.stringify({
+            'message': html_message.value,
+        }));
+    html_message.value = "";
 };

@@ -7,12 +7,13 @@ from main.models import Chat, Message
 def main_page(request):
     """Main page"""
 
-    chats = Chat.objects.filter(users=request.user.id).prefetch_related(Prefetch(
+    my_chats = Chat.objects.filter(users=request.user.id).prefetch_related(Prefetch(
         'chat_messages',
         queryset=Message.objects.exclude(is_read=request.user.id),
         to_attr="set_messages"
     ))
-    context = {"chats": chats}
+    chats_without_me = Chat.objects.exclude(users=request.user.id)
+    context = {"my_chats": my_chats, "chats_without_me": chats_without_me}
     return render(request, 'main/main_page.html', context)
 
 

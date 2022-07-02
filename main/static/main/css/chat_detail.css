@@ -17,12 +17,18 @@ body {
 }
 
 .redirect {
-    text-decoration: None
+    text-decoration: None;
+    color: blue;
+}
+
+.redirect:hover {
+    color: red;
 }
 
 .messages {
     overflow: auto;
     height: 600px;
+    width: 1000px;
 }
 
 .messages, .panel {
@@ -38,7 +44,7 @@ body {
 }
 
 .messages .messages_us, .messages .unreaded {
-    min-height: 60px;
+    min-height: 70px;
 }
 
 .reply-body {
@@ -47,7 +53,7 @@ body {
 
 .reply-body .username {
     text-decoration: None;
-    font-size: 22px;
+    font-size: 24px;
     color: blue;
 }
 
@@ -57,7 +63,7 @@ body {
 
 .reply-body .pub_date {
     float: right;
-    font-size: 16px;
+    font-size: 19px;
     color: black;
     margin: 6px 15px 0 0;
 }
@@ -67,7 +73,7 @@ body {
 }
 
 .reply-body .text {
-    font-size: 18px;
+    font-size: 20px;
     margin: 10px 20px 0 0;
     word-wrap: break-word;
     padding-left: 15px;
@@ -88,6 +94,7 @@ body {
     padding: 20px 0px 30px 10px;
     background-color: #5F9EA0;
     display: flex;
+    width: 990px;
 }
 
 #chat-message-submit {

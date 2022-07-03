@@ -32,16 +32,21 @@
     <div id="search">
         <p id="search_title">Поиск чата</p>
         <form action="" method="get" class="form">
-            <input type="search" class="input">
+            <input type="search" class="input" required>
             <button type="submit" class="search_button">
                 <span class="fa fa-search"></span>
             </button>
         </form>
     </div>
-    <div class="chats_without_me">
+    <div id="chats_without_me">
         {% for chat in chats_without_me %}
-            {{ chat }}
+            <div id="{{ chat.id }}" class="chat_without_me">
+                <p class="chat_name"><a class="redirect" href="{{ chat.get_absolute_url }}">{{ chat.name }}</a></p>
+                <p class="chat_owner_name"><a class="redirect" href="{{ c.users.get_absolute_url }}">{{ chat.owner_id.username }}</a></p>
+                <p class="is_password">Частный: <i>{{ chat.is_password }}</i></p>
+            </div>
+        {% empty %}
+            <p id="p5"><i>В данный момент не групп!</i></p>
         {% endfor %}
-    </div>
 </body>
 </html>

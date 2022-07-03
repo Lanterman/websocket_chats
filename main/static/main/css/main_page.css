@@ -7,7 +7,7 @@ body {
 }
 
 #auth {
-    padding: 30px 0px 30px 20px;
+    padding: 10px 0px 10px 20px;
 }
 
 #create {
@@ -19,7 +19,7 @@ body {
 #list_chats {
     float: left;
     font-size: 20px;
-    padding: 0px 50px 0px 50px;
+    padding: 0px 50px;
 }
 
 .redirect {
@@ -33,15 +33,15 @@ body {
 
 #search {
     width: 270px;
-    height: 120px;
-    margin-left: 700px;
+    height: 100px;
+    margin-left: 860px;
     padding: 0px 0px 0px 23px;
     border: solid 4px gray;
 }
 
 #search #search_title {
     font-size: 24px;
-    margin: 15px 0px 15px 60px;
+    margin: 5px 0px 10px 60px;
 }
 
 .form .input {
@@ -68,4 +68,39 @@ body {
 
 #search {
     margin-top: -20px;
+}
+
+#chats_without_me .chat_without_me {
+    margin: 40px 810px;
+    width: 400px;
+    height: 90px;
+    background-color: #ADFF2F;
+    box-shadow: 0 0 10px black;
+}
+
+#chats_without_me .chat_name {
+    padding-top: 15px;
+    font-size: 24px;
+    text-align: center;
+    margin: 0px;
+}
+
+#chats_without_me .chat_owner_name {
+    font-size: 22px;
+    padding: 0px 10px;
+    float: right;
+    margin-top: 12px;
+    margin-right: 10px;
+}
+
+#chats_without_me .is_password {
+    font-size: 22px;
+    padding: 3px 10px;
+    float: left;
+    margin-top: 9px;
+    margin-left: 10px;
+}
+
+#chats_without_me {
+    margin-bottom: 100px;
 }

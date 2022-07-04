@@ -13,7 +13,9 @@
 <body>
     <h1 id="title">Добро пожаловать в список чатов!</h1>
     <h2 id="auth">Вы вошли как:
-        <i><a class="redirect" href="">{{ request.user.get_full_name|default:request.user.username }}</a></i>
+        <i><a class="redirect" href="{% url 'user_detail' request.user.username %}">
+            {{ request.user.get_full_name|default:request.user.username }}
+        </a></i>
     </h2>
     <h2 id="name_of_chats">
         <i>Мои чаты</i>
@@ -21,32 +23,38 @@
     </h2>
     <div id="list_chats">
         {% for chat in my_chats %}
-            <p><a class="redirect" href="{{ chat.get_absolute_url }}">
-                    {{ chat.name }}
+            <p id="chat_{{ chat.id }}"><a class="redirect" href="{{ chat.get_absolute_url }}" oncontextmenu="content_menu(event, '{{chat.name}}', '{{chat.id}}')">
+                    {{ chat.name|truncatechars_html:25 }}
                     {% if chat.set_messages %}
                         ({{ chat.set_messages|sum_unread_messages }})
                     {% endif %}
             </a></p>
         {% endfor %}
     </div>
-    <div id="search">
+    <div id="search" class="search_chats">
         <p id="search_title">Поиск чата</p>
-        <form action="" method="get" class="form">
-            <input type="search" class="input" required>
-            <button type="submit" class="search_button">
-                <span class="fa fa-search"></span>
-            </button>
-        </form>
+        <input type="search" class="input" required>
+        <button type="submit" class="search_button">
+            <span class="fa fa-search"></span>
+        </button>
     </div>
     <div id="chats_without_me">
         {% for chat in chats_without_me %}
-            <div id="{{ chat.id }}" class="chat_without_me">
-                <p class="chat_name"><a class="redirect" href="{{ chat.get_absolute_url }}">{{ chat.name }}</a></p>
-                <p class="chat_owner_name"><a class="redirect" href="{{ c.users.get_absolute_url }}">{{ chat.owner_id.username }}</a></p>
+            <div class="chat_without_me">
+                <p class="chat_name">
+                    <a class="redirect" href="{{ chat.get_absolute_url }}">{{ chat.name|truncatechars_html:25 }}</a>
+                </p>
+                <p class="chat_owner_name">
+                    <a class="redirect" href="{% url 'user_detail' chat.owner_id.username %}">
+                        {{ chat.owner_id.username|truncatechars_html:15 }}
+                    </a>
+                </p>
                 <p class="is_password">Частный: <i>{{ chat.is_password }}</i></p>
             </div>
         {% empty %}
-            <p id="p5"><i>В данный момент не групп!</i></p>
+            <p id="no_groups"><i>В данный момент не групп!</i></p>
         {% endfor %}
+    </div>
+        <script src="/static/main/js/main_page.js"></script>
 </body>
 </html>

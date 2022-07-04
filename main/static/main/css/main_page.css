@@ -44,17 +44,17 @@ body {
     margin: 5px 0px 10px 60px;
 }
 
-.form .input {
+.search_chats .input {
     padding: 7px;
     width: 200px;
     margin-top: 4px;
 }
 
-.form .input:hover {
+.search_chats .input:hover {
     background-color: yellow;
 }
 
-.form .search_button {
+.search_chats .search_button {
     margin: 2px 17px 0 0;
     padding: 6px 8px 6px 8px;
     border-radius: 30px;
@@ -62,7 +62,7 @@ body {
     float: right;
 }
 
-.form .search_button:hover {
+.search_chats .search_button:hover {
     background-color: yellow;
 }
 
@@ -103,4 +103,10 @@ body {
 
 #chats_without_me {
     margin-bottom: 100px;
+}
+
+#chats_without_me #no_groups {
+    margin-top: 200px;
+    text-align: center;
+    font-size: 24px;
 }

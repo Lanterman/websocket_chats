@@ -59,3 +59,7 @@ class ChatDetailView(DetailView):
         context['chat_messages'] = Message.objects.filter(chat_id=self.object.id).select_related(
             "owner_id").prefetch_related("is_read")
         return context
+
+
+def user_detail(request, username):
+    return render(request, "main/user_detail.html")

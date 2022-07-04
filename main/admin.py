@@ -4,11 +4,11 @@ from main.models import Chat, Message
 
 @admin.register(Chat)
 class AdminChat(admin.ModelAdmin):
-    list_display = ('id', 'name', 'slug', 'is_password', 'pub_date')
+    list_display = ('id', 'name', 'slug', 'pub_date')
     list_display_links = ('id', 'name', 'slug')
-    fields = ('name', 'slug', 'is_password', 'owner_id', 'users')
+    fields = ('name', 'slug', 'password', 'owner_id', 'users')
     search_fields = ('name',)
-    list_filter = ('name', 'slug', 'is_password', 'pub_date')
+    list_filter = ('name', 'slug', 'pub_date')
     list_max_show_all = 5
     list_per_page = 10
     raw_id_fields = ('users',)

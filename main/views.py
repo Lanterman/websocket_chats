@@ -43,6 +43,7 @@ class ListMainPageView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['chats_without_me'] = Chat.objects.exclude(users=self.request.user.id).select_related("owner_id")[:5]
+        context['type_action'] = "Создать чат"
         return context
 
 

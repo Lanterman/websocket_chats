@@ -27,7 +27,9 @@ mainSocket.onmessage = function(e) {
         if (!chats_info_list.length) {
             chats_without_me.innerHTML = '<p id="no_groups"><i>Нет групп соответствующих запросу!</i></p>'
         };
-    }else{
+    }else if (data.type == "create_chat") {
+        window.location.pathname = `/chat/${data.chat_slug}/`;
+    }else {
         document.querySelector(`#chat_${data.chat_id}`).remove();
         console.log(`${data.chat_id} chat deleted`);
     };
@@ -45,9 +47,22 @@ document.querySelector(".search_button").onclick = function(e) {
     search_input.value = "";
 };
 
-function content_menu(event, chat_name, chat_id) {
+document.querySelector("#create_button").onclick = function(event) {
+    const chat_title = document.querySelector("#input_name");
+    const chat_password = document.querySelector("#input_password");
+    chat_title.reportValidity();
+    if (chat_title.value) {
+    mainSocket.send(JSON.stringify({
+            "chat_title": chat_title.value,
+            "chat_password": chat_password.value,
+            "type": "create_chat",
+        }));
+    };
+};
+
+function deleteChat(event, chat_name, chat_id) {
     event.preventDefault();
-    if (confirm(`Вы действительно хотите удалить ${chat_name}?`)) {
+    if (confirm(`Вы действительно хотите удалить '${chat_name}'?`)) {
         mainSocket.send(JSON.stringify({
             "chat_id": chat_id,
             "type": "delete_chat",

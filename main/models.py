@@ -8,7 +8,7 @@ class Chat(models.Model):
     name = models.CharField(verbose_name='name', max_length=50)
     slug = models.CharField(verbose_name="URL", max_length=50, unique=True,
                             help_text="Use only prime numbers! Filling with ID")
-    is_password = models.BooleanField(default=False, verbose_name="is_password")
+    password = models.CharField(verbose_name="password", blank=True, max_length=10)
     pub_date = models.DateTimeField(verbose_name="set_data", auto_now_add=True)
     owner_id = models.ForeignKey(User, verbose_name="owner", on_delete=models.SET_NULL, related_name="user_chats",
                                  null=True)
@@ -19,7 +19,7 @@ class Chat(models.Model):
         verbose_name_plural = "Chats"
 
     def __str__(self):
-        return f"{self.id} - owner_id: {self.name}"
+        return f"{self.id} - name: {self.name}"
 
     def get_absolute_url(self):
         return reverse('chat_detail', kwargs={'chat_slug': self.slug})

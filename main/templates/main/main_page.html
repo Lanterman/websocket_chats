@@ -19,11 +19,11 @@
     </h2>
     <h2 id="name_of_chats">
         <i>Мои чаты</i>
-        <a href="" class="redirect" id="create"><i class="fas fa-plus"></i></a>
+        <a href="#createChat" class="redirect" id="create"><i class="fas fa-plus"></i></a>
     </h2>
     <div id="list_chats">
         {% for chat in my_chats %}
-            <p id="chat_{{ chat.id }}"><a class="redirect" href="{{ chat.get_absolute_url }}" oncontextmenu="content_menu(event, '{{chat.name}}', '{{chat.id}}')">
+            <p id="chat_{{ chat.id }}"><a class="redirect" href="{{ chat.get_absolute_url }}" oncontextmenu="deleteChat(event, '{{chat.name}}', '{{chat.id}}')">
                     {{ chat.name|truncatechars_html:25 }}
                     {% if chat.set_messages %}
                         ({{ chat.set_messages|sum_unread_messages }})
@@ -49,12 +49,13 @@
                         {{ chat.owner_id.username|truncatechars_html:15 }}
                     </a>
                 </p>
-                <p class="is_password">Частный: <i>{{ chat.is_password }}</i></p>
+                <p class="is_password">Частный: <i>{% if chat.password %}Да{% else %}Нет{% endif %}</i></p>
             </div>
         {% empty %}
             <p id="no_groups"><i>В данный момент не групп!</i></p>
         {% endfor %}
     </div>
-        <script src="/static/main/js/main_page.js"></script>
+    {% include 'main/modal_window.html' %}
+    <script src="/static/main/js/main_page.js"></script>
 </body>
 </html>

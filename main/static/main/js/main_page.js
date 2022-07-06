@@ -61,12 +61,16 @@ document.querySelector("#create_button").onclick = function(event) {
     };
 };
 
-function deleteChat(event, chat_name, chat_id) {
+function deleteChat(event, chat_name, chat_id, owner_id, user_id) {
     event.preventDefault();
-    if (confirm(`Вы действительно хотите удалить '${chat_name}'?`)) {
-        mainSocket.send(JSON.stringify({
-            "chat_id": chat_id,
-            "type": "delete_chat",
-        }));
+    if (owner_id == user_id) {
+        if (confirm(`Вы действительно хотите удалить '${chat_name}'?`)) {
+            mainSocket.send(JSON.stringify({
+                "chat_id": chat_id,
+                "type": "delete_chat",
+            }));
+        };
+    }else {
+        alert(`Вы не являетесь владельцем чата "${chat_name}"!`)
     };
 };

@@ -1,5 +1,8 @@
+from django.core.exceptions import PermissionDenied
 from django.db.models import Prefetch
-from django.shortcuts import render
+from django.http import Http404
+from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.views.generic import DetailView, ListView
 
 from main.models import Chat, Message
@@ -59,8 +62,30 @@ class ChatDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         context['chat_messages'] = Message.objects.filter(chat_id=self.object.id).select_related(
             "owner_id").prefetch_related("is_read")
+        context["type_action"] = "Редактировать чат"
         return context
 
 
 def user_detail(request, username):
     return render(request, "main/user_detail.html")
+
+
+def delete_chat(request, chat_slug):
+    """Delete chat if you are owner"""
+
+    chat = Chat.objects.filter(id=chat_slug)
+    if request.user.id == chat[0].owner_id_id:
+        chat.delete()
+        return redirect(reverse('main_page'))
+    raise PermissionDenied()
+
+
+def leave_chat(request, chat_slug):
+    """Leave chat if you aren't owner and are member of chat"""
+
+    chat = Chat.objects.filter(id=chat_slug)[0]
+    if request.user.id != chat.owner_id_id:
+        if request.user in chat.users.all():
+            chat.users.remove(request.user)
+            return redirect(reverse('main_page'))
+    raise PermissionDenied()

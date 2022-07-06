@@ -23,7 +23,8 @@
     </h2>
     <div id="list_chats">
         {% for chat in my_chats %}
-            <p id="chat_{{ chat.id }}"><a class="redirect" href="{{ chat.get_absolute_url }}" oncontextmenu="deleteChat(event, '{{chat.name}}', '{{chat.id}}')">
+            <p id="chat_{{ chat.id }}"><a class="redirect" href="{{ chat.get_absolute_url }}"
+                                          oncontextmenu="deleteChat(event, '{{chat.name}}', '{{chat.id}}', '{{request.user.id}}', '{{chat.owner_id_id}}')">
                     {{ chat.name|truncatechars_html:25 }}
                     {% if chat.set_messages %}
                         ({{ chat.set_messages|sum_unread_messages }})

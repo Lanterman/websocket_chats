@@ -11,6 +11,8 @@ class MainPageConsumer(WebsocketConsumer):
 
     def connect(self):
         self.user = self.scope['user']
+        self.room_group_name = "main_page"
+        async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
         self.accept()
 
     def disconnect(self, close_code):
@@ -40,6 +42,7 @@ class MainPageConsumer(WebsocketConsumer):
 
         chat_title = data["chat_title"]
         chat_password = data["chat_password"]
+        chat_password = chat_password if len(chat_password) <= 100 else chat_password[:101]
         new_chat = Chat.objects.create(name=chat_title, password=chat_password, owner_id_id=self.user.id)
         new_chat.users.add(self.user)
         Chat.objects.filter(id=new_chat.id).update(slug=new_chat.id)
@@ -57,7 +60,15 @@ class MainPageConsumer(WebsocketConsumer):
             chat_id = text_data_json['chat_id']
             Chat.objects.get(id=chat_id).delete()
 
-            self.send(text_data=json.dumps({"type": action_type, "chat_id": chat_id}))
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {'type': 'delete_chat', "chat_id": chat_id}
+            )
+
+    def delete_chat(self, event):
+        chat_id = event["chat_id"]
+
+        self.send(text_data=json.dumps({"type": "delete_chat", "chat_id": chat_id}))
 
 
 class ChatDetailConsumer(WebsocketConsumer):
@@ -68,12 +79,15 @@ class ChatDetailConsumer(WebsocketConsumer):
         self.user = self.scope['user']
         self.room_group_name = 'chat_%s' % self.chat_slug
         async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
+        self.is_read()
         self.accept()
 
     def disconnect(self, close_code):
         async_to_sync(self.channel_layer.group_discard)(self.room_group_name, self.channel_name)
 
     def is_read(self):
+        """Read messages"""
+
         messages = Message.objects.filter(chat_id_id=self.chat_slug).exclude(owner_id=self.user).exclude(
             is_read=self.user.id)
         [message.is_read.add(self.user) for message in messages]
@@ -82,7 +96,7 @@ class ChatDetailConsumer(WebsocketConsumer):
             {'type': 'message_read', 'message_info': "connect", "user_id": self.user.id}
         )
 
-    def receive(self, text_data):
+    def receive(self, text_data=None, bytes_data=None):
         text_data_json = json.loads(text_data)
         if text_data_json["type"] == "send_message":
             message = text_data_json['message']
@@ -97,14 +111,29 @@ class ChatDetailConsumer(WebsocketConsumer):
                 self.room_group_name,
                 {'type': 'chat_message', 'message_info': message_info, "user_id": self.user.id}
             )
-        self.is_read()
+            self.is_read()
+        elif text_data_json["type"] == "update_chat":
+            chat_title = text_data_json["chat_title"]
+            chat_password = text_data_json["chat_password"]
+            chat_password = chat_password if len(chat_password) <= 100 else chat_password[:101]
+            chat_id = text_data_json["chat_id"]
+            Chat.objects.filter(id=chat_id).update(name=chat_title, password=chat_password)
+
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {'type': 'update_chat', "chat_name": chat_title}
+            )
 
     def message_read(self, event):
         message_info = event["message_info"]
         user_id = event["user_id"]
-        self.send(text_data=json.dumps({"message_info": message_info, "user_id": user_id}))
+        self.send(text_data=json.dumps({"type": "message_read", "message_info": message_info, "user_id": user_id}))
 
     def chat_message(self, event):
         message_info = event['message_info']
         user_id = event["user_id"]
-        self.send(text_data=json.dumps({'message_info': message_info, "user_id": user_id}))
+        self.send(text_data=json.dumps({"type": "chat_message", 'message_info': message_info, "user_id": user_id}))
+
+    def update_chat(self, event):
+        chat_title = event["chat_name"]
+        self.send(text_data=json.dumps({"type": "update_chat", "chat_name": chat_title}))

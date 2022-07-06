@@ -6,11 +6,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="{% static 'main/css/main_page.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'main/css/chat_detail.css' %}">
+    <script src="https://kit.fontawesome.com/adb6ee4607.js" crossorigin="anonymous"></script>
     <title>{{ chat.name }}</title>
 </head>
 <body>
-    <h1 id="title">Добро пожаловать в чат "{{ chat.name }}"</h1>
+    <a id="back_to_main_page" href="{% url 'main_page' %}">&#8592;</a>
+    <h1 id="title">
+        <i id="title_chat">Добро пожаловать в чат "{{ chat.name }}"</i>
+        {% if chat.owner_id_id == request.user.id %}
+            <a class="action_buttons" href="#createChat"><i class="fas fa-pen"></i></a>
+            <a class="action_buttons" onclick="delete_chat()"><i class="fas fa-backspace"></i></a>
+        {% else %}
+            <a class="action_buttons" onclick="leave_chat()"><i class="fas fa-backspace"></i></a>
+        {% endif %}
+    </h1>
     <h2 id="auth">Вы вошли как:
         <i><a class="redirect" href="{% url 'user_detail' request.user.username %}">{{ request.user.username }}</a></i>
     </h2>
@@ -50,7 +61,7 @@
         <textarea id="chat-message-input" placeholder="Введите сообщение" required cols="85" rows="3"></textarea>
         <input type="button" id="chat-message-submit" value="Отправить">
     </div>
-
+    {% include 'main/modal_window.html' %}
     {{ chat.slug|json_script:"chat_slug" }}
     <script src="/static/main/js/chat_detail.js"></script>
 </body>

@@ -12,11 +12,11 @@
 <body>
     <h1 id="title">Добро пожаловать в чат "{{ chat.name }}"</h1>
     <h2 id="auth">Вы вошли как:
-        <i><a class="redirect" href="">{{ request.user.get_full_name|default:request.user.username }}</a></i>
+        <i><a class="redirect" href="{% url 'user_detail' request.user.username %}">{{ request.user.username }}</a></i>
     </h2>
     <div id="list_users">
         {% for user in chat.users.all %}
-            <p><a class="redirect" href="">{{ user.username }}</a></p>
+            <p><a class="redirect" href="{% url 'user_detail' user.username %}">{{ user.username }}</a></p>
         {% endfor %}
     </div>
 
@@ -30,7 +30,7 @@
                                      {% endif %}"><input type="hidden" value="{{ message.owner_id_id }}">
                 <div class="reply-body">
                     <strong>
-                        <a class="username" href="{{ message.owner_id.get_absolute_url }}">
+                        <a class="username" href="{% url 'user_detail' message.owner_id.username %}">
                             {{ message.owner_id.username }}
                         </a>
                     </strong>

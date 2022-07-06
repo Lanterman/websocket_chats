@@ -23,14 +23,12 @@ class MainPageConsumer(WebsocketConsumer):
         found_chats = Chat.objects.filter(name__icontains=search_value).select_related("owner_id")
         chat_list = []
         for chat in found_chats:
-            chat_name = chat.name if len(chat.name) <= 25 else chat.name[:25] + "..."
             user_name = chat.owner_id.username
-            chat_owner_name = user_name if len(user_name) <= 15 else user_name[:15] + "..."
             info_chat = {
                 "chat_url": chat.get_absolute_url(),
-                "chat_name": chat_name,
+                "chat_name": chat.name if len(chat.name) <= 25 else chat.name[:25] + "...",
                 "chat_owner_url": f"user/{chat.owner_id.username}/",
-                "chat_owner_name": chat_owner_name,
+                "chat_owner_name": user_name if len(user_name) <= 15 else user_name[:15] + "...",
                 "is_password": "Да" if chat.password else "Нет"
             }
             chat_list.append(info_chat)
@@ -86,7 +84,7 @@ class ChatDetailConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        if len(text_data_json) != 0:
+        if text_data_json["type"] == "send_message":
             message = text_data_json['message']
             message_obj = Message.objects.create(message=message, chat_id_id=self.chat_slug, owner_id_id=self.user.id)
             message_obj.is_read.add(self.user)
@@ -94,7 +92,6 @@ class ChatDetailConsumer(WebsocketConsumer):
             message_info = {
                 "message": message.replace("\n", "<br>"),
                 "owner_name": self.user.username if len(self.user.username) < 50 else self.user.username[:48] + "...",
-                # "owner_url": self.user.get_absolute_url(),
             }
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name,

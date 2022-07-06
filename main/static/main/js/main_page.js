@@ -28,6 +28,8 @@ mainSocket.onmessage = function(e) {
             chats_without_me.innerHTML = '<p id="no_groups"><i>Нет групп соответствующих запросу!</i></p>'
         };
     }else if (data.type == "create_chat") {
+        const close_modal_window = document.querySelector(".close")
+        document.location.replace(close_modal_window.href)
         window.location.pathname = `/chat/${data.chat_slug}/`;
     }else {
         document.querySelector(`#chat_${data.chat_id}`).remove();
@@ -44,7 +46,6 @@ document.querySelector(".search_button").onclick = function(e) {
             "type": "search",
         }));
     };
-    search_input.value = "";
 };
 
 document.querySelector("#create_button").onclick = function(event) {
@@ -52,7 +53,7 @@ document.querySelector("#create_button").onclick = function(event) {
     const chat_password = document.querySelector("#input_password");
     chat_title.reportValidity();
     if (chat_title.value) {
-    mainSocket.send(JSON.stringify({
+        mainSocket.send(JSON.stringify({
             "chat_title": chat_title.value,
             "chat_password": chat_password.value,
             "type": "create_chat",

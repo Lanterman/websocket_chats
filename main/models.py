@@ -35,6 +35,7 @@ class Message(models.Model):
     chat_id = models.ForeignKey(Chat, verbose_name="chat_id", on_delete=models.CASCADE, related_name="chat_messages")
 
     class Meta:
+        ordering = ["-pub_date"]
         verbose_name = "Message"
         verbose_name_plural = "Messages"
 

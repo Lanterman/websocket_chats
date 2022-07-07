@@ -4,6 +4,15 @@ const chatDetailSocket = new WebSocket('ws://' + window.location.host + '/ws/cha
 
 chatDetailSocket.onopen = function(e) {
     console.log("Ok");
+    is_read();
+    if (is_new_user.value == 1) {
+        chatDetailSocket.send(JSON.stringify({
+            "type": "connect_to_chat",
+        }));
+        fetch(`${window.location.pathname}connect/`)
+            .then(response => console.log('Successfully'))
+            .catch(error => console.log('Error'))
+    };
 };
 
 chatDetailSocket.onclose = function(e) {
@@ -12,9 +21,8 @@ chatDetailSocket.onclose = function(e) {
 
 chatDetailSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
-    const message_info = data.message_info;
-
     if (data.type == "chat_message") {
+        const message_info = data.message_info;
         const no_messages = document.querySelector(".no_messages");
         if (no_messages) {
             no_messages.remove();
@@ -33,6 +41,7 @@ chatDetailSocket.onmessage = function(e) {
                                         </div>
                                     </div>`;
         messages_html.innerHTML += old_messages;
+        is_read();
     }else if (data.type == "update_chat") {
         document.querySelector("#title_chat").innerHTML = `Добро пожаловать в чат "${data.chat_name}"`;
         const close_modal_window = document.querySelector(".close");
@@ -45,30 +54,51 @@ chatDetailSocket.onmessage = function(e) {
                 message.style.backgroundColor = "#FFFFF0";
             };
         };
+    }else if (data.type =="connect_to_chat") {
+        const user_info = data.user_info;
+        const user_list = document.querySelector("#list_users");
+        const new_user = `<p><a class=redirect href=/user/${user_info.owner_url}>${user_info.owner_name}</a></p>`
+        user_list.innerHTML += new_user;
+    }else if (data.type == "disconnect_to_chat") {
+        document.querySelector(`#user_${data.user_username}`).remove()
     };
     document.querySelector("#chat-message-input").focus();
 };
 
-document.querySelector("#chat-message-submit").onclick = function(e) {
+function is_read() {
+    fetch(`${window.location.pathname}is_read/`);
+}
+
+function send_message(e) {
     const html_message = document.querySelector("#chat-message-input");
-    chatDetailSocket.send(JSON.stringify({
-            "type": "send_message",
-            "message": html_message.value,
-        }));
-    html_message.value = "";
+    html_message.reportValidity();
+    if (html_message.value) {
+        chatDetailSocket.send(JSON.stringify({
+                "type": "send_message",
+                "message": html_message.value,
+            }));
+
+        let data = new FormData();
+        data.append("message", `${html_message.value}`)
+        fetch(`${window.location.pathname}add_message/`, {method: 'POST', body: data});
+
+        html_message.value = "";
+    };
 };
 
-document.querySelector("#create_button").onclick = function(event) {
+function submit_data(event) {
     const chat_title = document.querySelector("#input_name");
     const chat_password = document.querySelector("#input_password");
     chat_title.reportValidity();
     if (chat_title.value){
         chatDetailSocket.send(JSON.stringify({
             "chat_title": chat_title.value,
-            "chat_password": chat_password.value,
-            "chat_id": chat_slug,
             "type": "update_chat",
         }));
+        let data = new FormData();
+        data.append("title", `${chat_title.value}`)
+        data.append("password", `${chat_password.value}`)
+        fetch(`${window.location.pathname}update_chat/`, {method: 'POST', body: data});
     };
 };
 
@@ -80,6 +110,9 @@ function delete_chat(e) {
 
 function leave_chat(e) {
     if (confirm("Вы действительно хотите выйти из чата?")) {
-        window.location.pathname = `/chat/${chat_slug}/leave/`;
+        chatDetailSocket.send(JSON.stringify({
+            "type": "disconnect_to_chat",
+        }));
+        window.location.pathname = `chat/${chat_slug}/leave/`;
     };
 };

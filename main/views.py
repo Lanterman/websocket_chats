@@ -1,8 +1,9 @@
 from django.core.exceptions import PermissionDenied
 from django.db.models import Prefetch
-from django.http import Http404
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, ListView
 
 from main.models import Chat, Message
@@ -56,7 +57,7 @@ class ChatDetailView(DetailView):
     context_object_name = "chat"
     slug_url_kwarg = "chat_slug"
     template_name = "main/chat_detail.html"
-    queryset = Chat.objects.all()
+    queryset = Chat.objects.all().prefetch_related("users")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -68,6 +69,36 @@ class ChatDetailView(DetailView):
 
 def user_detail(request, username):
     return render(request, "main/user_detail.html")
+
+
+@csrf_exempt
+def add_message(request, chat_slug):
+    """Add message"""
+
+    message = request.POST.get("message")
+    message_obj = Message.objects.create(message=message, chat_id_id=chat_slug, owner_id_id=request.user.id)
+    message_obj.is_read.add(request.user)
+    return HttpResponse(status=200)
+
+
+@csrf_exempt
+def update_chat(request, chat_slug):
+    """Update chat"""
+
+    chat_password = request.POST.get("password")
+    chat_title = request.POST.get("title")
+    chat_password = chat_password if len(chat_password) <= 100 else chat_password[:101]
+    Chat.objects.filter(id=chat_slug).update(name=chat_title, password=chat_password)
+    return HttpResponse(status=200)
+
+
+def is_read(request, chat_slug):
+    """Read unread messages"""
+
+    messages = Message.objects.filter(chat_id_id=chat_slug).exclude(owner_id=request.user).exclude(
+        is_read=request.user.id)
+    [message.is_read.add(request.user) for message in messages]
+    return HttpResponse(status=200)
 
 
 def delete_chat(request, chat_slug):
@@ -89,3 +120,11 @@ def leave_chat(request, chat_slug):
             chat.users.remove(request.user)
             return redirect(reverse('main_page'))
     raise PermissionDenied()
+
+
+def connect_to_chat(request, chat_slug):
+    """Connect user to chat"""
+
+    chat = Chat.objects.get(slug=chat_slug)
+    chat.users.add(request.user)
+    return HttpResponse(status=201)

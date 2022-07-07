@@ -48,7 +48,7 @@ document.querySelector(".search_button").onclick = function(e) {
     };
 };
 
-document.querySelector("#create_button").onclick = function(event) {
+function submit_data(event) {
     const chat_title = document.querySelector("#input_name");
     const chat_password = document.querySelector("#input_password");
     chat_title.reportValidity();

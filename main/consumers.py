@@ -3,7 +3,7 @@ import json
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 
-from main.models import Message, Chat
+from main.models import Chat
 
 
 class MainPageConsumer(WebsocketConsumer):
@@ -88,9 +88,6 @@ class ChatDetailConsumer(WebsocketConsumer):
     def is_read(self):
         """Read messages"""
 
-        messages = Message.objects.filter(chat_id_id=self.chat_slug).exclude(owner_id=self.user).exclude(
-            is_read=self.user.id)
-        [message.is_read.add(self.user) for message in messages]
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name,
             {'type': 'message_read', 'message_info': "connect", "user_id": self.user.id}
@@ -98,30 +95,38 @@ class ChatDetailConsumer(WebsocketConsumer):
 
     def receive(self, text_data=None, bytes_data=None):
         text_data_json = json.loads(text_data)
-        if text_data_json["type"] == "send_message":
+        action_type = text_data_json["type"]
+        if action_type == "send_message":
             message = text_data_json['message']
-            message_obj = Message.objects.create(message=message, chat_id_id=self.chat_slug, owner_id_id=self.user.id)
-            message_obj.is_read.add(self.user)
-
             message_info = {
                 "message": message.replace("\n", "<br>"),
                 "owner_name": self.user.username if len(self.user.username) < 50 else self.user.username[:48] + "...",
+                "owner_url": self.user.username,
             }
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name,
                 {'type': 'chat_message', 'message_info': message_info, "user_id": self.user.id}
             )
             self.is_read()
-        elif text_data_json["type"] == "update_chat":
+        elif action_type == "update_chat":
             chat_title = text_data_json["chat_title"]
-            chat_password = text_data_json["chat_password"]
-            chat_password = chat_password if len(chat_password) <= 100 else chat_password[:101]
-            chat_id = text_data_json["chat_id"]
-            Chat.objects.filter(id=chat_id).update(name=chat_title, password=chat_password)
-
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name,
                 {'type': 'update_chat', "chat_name": chat_title}
+            )
+        elif action_type == "connect_to_chat":
+            user_info = {
+                "owner_name": self.user.username if len(self.user.username) < 50 else self.user.username[:48] + "...",
+                "owner_url": self.user.username,
+            }
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {'type': 'connect_to_chat', "user_info": user_info}
+            )
+        elif action_type == "disconnect_to_chat":
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {'type': 'disconnect_to_chat', "user_username": self.user.username}
             )
 
     def message_read(self, event):
@@ -137,3 +142,11 @@ class ChatDetailConsumer(WebsocketConsumer):
     def update_chat(self, event):
         chat_title = event["chat_name"]
         self.send(text_data=json.dumps({"type": "update_chat", "chat_name": chat_title}))
+
+    def connect_to_chat(self, event):
+        user_info = event["user_info"]
+        self.send(text_data=json.dumps({"type": "connect_to_chat", 'user_info': user_info}))
+
+    def disconnect_to_chat(self, event):
+        user_username = event["user_username"]
+        self.send(text_data=json.dumps({"type": "disconnect_to_chat", "user_username": user_username}))

@@ -1,7 +1,7 @@
 import json
 
 from asgiref.sync import async_to_sync
-from channels.generic.websocket import WebsocketConsumer
+from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
 
 from main.models import Chat
 
@@ -58,7 +58,6 @@ class MainPageConsumer(WebsocketConsumer):
             self.create_chat(text_data_json)
         else:
             chat_id = text_data_json['chat_id']
-            Chat.objects.get(id=chat_id).delete()
 
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name,
@@ -71,29 +70,29 @@ class MainPageConsumer(WebsocketConsumer):
         self.send(text_data=json.dumps({"type": "delete_chat", "chat_id": chat_id}))
 
 
-class ChatDetailConsumer(WebsocketConsumer):
+class ChatDetailConsumer(AsyncWebsocketConsumer):
     """Consumer for chat detail"""
 
-    def connect(self):
+    async def connect(self):
         self.chat_slug = self.scope['url_route']['kwargs']['chat_slug']
         self.user = self.scope['user']
         self.room_group_name = 'chat_%s' % self.chat_slug
-        async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
-        self.is_read()
-        self.accept()
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.is_read()
+        await self.accept()
 
-    def disconnect(self, close_code):
-        async_to_sync(self.channel_layer.group_discard)(self.room_group_name, self.channel_name)
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
-    def is_read(self):
+    async def is_read(self):
         """Read messages"""
 
-        async_to_sync(self.channel_layer.group_send)(
+        await self.channel_layer.group_send(
             self.room_group_name,
             {'type': 'message_read', 'message_info': "connect", "user_id": self.user.id}
         )
 
-    def receive(self, text_data=None, bytes_data=None):
+    async def receive(self, text_data=None, bytes_data=None):
         text_data_json = json.loads(text_data)
         action_type = text_data_json["type"]
         if action_type == "send_message":
@@ -103,14 +102,14 @@ class ChatDetailConsumer(WebsocketConsumer):
                 "owner_name": self.user.username if len(self.user.username) < 50 else self.user.username[:48] + "...",
                 "owner_url": self.user.username,
             }
-            async_to_sync(self.channel_layer.group_send)(
+            await self.channel_layer.group_send(
                 self.room_group_name,
                 {'type': 'chat_message', 'message_info': message_info, "user_id": self.user.id}
             )
-            self.is_read()
+            await self.is_read()
         elif action_type == "update_chat":
             chat_title = text_data_json["chat_title"]
-            async_to_sync(self.channel_layer.group_send)(
+            await self.channel_layer.group_send(
                 self.room_group_name,
                 {'type': 'update_chat', "chat_name": chat_title}
             )
@@ -119,34 +118,34 @@ class ChatDetailConsumer(WebsocketConsumer):
                 "owner_name": self.user.username if len(self.user.username) < 50 else self.user.username[:48] + "...",
                 "owner_url": self.user.username,
             }
-            async_to_sync(self.channel_layer.group_send)(
+            await self.channel_layer.group_send(
                 self.room_group_name,
                 {'type': 'connect_to_chat', "user_info": user_info}
             )
         elif action_type == "disconnect_to_chat":
-            async_to_sync(self.channel_layer.group_send)(
+            await self.channel_layer.group_send(
                 self.room_group_name,
                 {'type': 'disconnect_to_chat', "user_username": self.user.username}
             )
 
-    def message_read(self, event):
+    async def message_read(self, event):
         message_info = event["message_info"]
         user_id = event["user_id"]
-        self.send(text_data=json.dumps({"type": "message_read", "message_info": message_info, "user_id": user_id}))
+        await self.send(text_data=json.dumps({"type": "message_read", "message_info": message_info, "user_id": user_id}))
 
-    def chat_message(self, event):
+    async def chat_message(self, event):
         message_info = event['message_info']
         user_id = event["user_id"]
-        self.send(text_data=json.dumps({"type": "chat_message", 'message_info': message_info, "user_id": user_id}))
+        await self.send(text_data=json.dumps({"type": "chat_message", 'message_info': message_info, "user_id": user_id}))
 
-    def update_chat(self, event):
+    async def update_chat(self, event):
         chat_title = event["chat_name"]
-        self.send(text_data=json.dumps({"type": "update_chat", "chat_name": chat_title}))
+        await self.send(text_data=json.dumps({"type": "update_chat", "chat_name": chat_title}))
 
-    def connect_to_chat(self, event):
+    async def connect_to_chat(self, event):
         user_info = event["user_info"]
-        self.send(text_data=json.dumps({"type": "connect_to_chat", 'user_info': user_info}))
+        await self.send(text_data=json.dumps({"type": "connect_to_chat", 'user_info': user_info}))
 
-    def disconnect_to_chat(self, event):
+    async def disconnect_to_chat(self, event):
         user_username = event["user_username"]
-        self.send(text_data=json.dumps({"type": "disconnect_to_chat", "user_username": user_username}))
+        await self.send(text_data=json.dumps({"type": "disconnect_to_chat", "user_username": user_username}))

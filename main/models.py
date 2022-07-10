@@ -31,7 +31,7 @@ class Message(models.Model):
     is_read = models.ManyToManyField(User, verbose_name='is_read')
     pub_date = models.DateTimeField(verbose_name="set_data", auto_now_add=True)
     owner_id = models.ForeignKey(User, verbose_name="owner", on_delete=models.SET_NULL, related_name="user_messages",
-                                 null=True)
+                                 null=True, blank=True)
     chat_id = models.ForeignKey(Chat, verbose_name="chat_id", on_delete=models.CASCADE, related_name="chat_messages")
 
     class Meta:

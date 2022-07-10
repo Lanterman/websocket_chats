@@ -69,6 +69,10 @@ function deleteChat(event, chat_name, chat_id, owner_id, user_id) {
                 "chat_id": chat_id,
                 "type": "delete_chat",
             }));
+
+            let data = new FormData();
+            data.append("type", "main_page")
+            fetch(`/chat/${chat_id}/delete/`, {method: 'POST', body: data});
         };
     }else {
         alert(`Вы не являетесь владельцем чата "${chat_name}"!`)

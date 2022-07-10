@@ -112,6 +112,12 @@ body {
     margin: 200px 0;
 }
 
+#user_action {
+    text-align: center;
+    color: #a62b46;
+    font-size: 20px;
+}
+
 .panel {
     margin-bottom: 100px;
     padding: 20px 0px 30px 10px;

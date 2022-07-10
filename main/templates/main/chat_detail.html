@@ -56,21 +56,25 @@
     {% if chat_messages %}
     <div class="messages">
         {% for message in chat_messages %}
-            <div id="message" class="{% if request.user.id == message.owner_id_id and message.is_read.count != 1 or request.user.id != message.owner_id_id%}
-                                        messages_us
-                                     {% else %}
-                                        unreaded
-                                     {% endif %}"><input type="hidden" value="{{ message.owner_id_id }}">
-                <div class="reply-body">
-                    <strong>
-                        <a class="username" href="{% url 'user_detail' message.owner_id.username %}">
-                            {{ message.owner_id.username }}
-                        </a>
-                    </strong>
-                    <span class="pub_date">{{ message.pub_date|naturaltime }}</span>
-                    <p class="text">{{ message.message|linebreaksbr|safe}}</p>
+            {% if message.owner_id %}
+                <div id="message" class="{% if request.user.id == message.owner_id_id and message.is_read.count != 1 or request.user.id != message.owner_id_id%}
+                                            messages_us
+                                         {% else %}
+                                            unreaded
+                                         {% endif %}"><input type="hidden" value="{{ message.owner_id_id }}">
+                    <div class="reply-body">
+                        <strong>
+                            <a class="username" href="{% url 'user_detail' message.owner_id.username %}">
+                                {{ message.owner_id.username }}
+                            </a>
+                        </strong>
+                        <span class="pub_date">{{ message.pub_date|naturaltime }}</span>
+                        <p class="text">{{ message.message|linebreaksbr|safe}}</p>
+                    </div>
                 </div>
-            </div>
+            {% else %}
+                <p id="user_action">{{ message.message }}</p>
+            {% endif %}
         {% endfor %}
     </div>
     {% else %}

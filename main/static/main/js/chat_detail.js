@@ -5,14 +5,7 @@ const chatDetailSocket = new WebSocket('ws://' + window.location.host + '/ws/cha
 chatDetailSocket.onopen = function(e) {
     console.log("Ok");
     is_read();
-    if (is_new_user.value == 1) {
-        chatDetailSocket.send(JSON.stringify({
-            "type": "connect_to_chat",
-        }));
-        fetch(`${window.location.pathname}connect/`)
-            .then(response => console.log('Successfully'))
-            .catch(error => console.log('Error'))
-    };
+    connect_to_chat();
 };
 
 chatDetailSocket.onclose = function(e) {
@@ -21,13 +14,13 @@ chatDetailSocket.onclose = function(e) {
 
 chatDetailSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
+    const messages_html = document.querySelector(".messages");
     if (data.type == "chat_message") {
         const message_info = data.message_info;
         const no_messages = document.querySelector(".no_messages");
         if (no_messages) {
             no_messages.remove();
         };
-        const messages_html = document.querySelector(".messages");
         const old_messages = messages_html.innerHTML;
         messages_html.innerHTML = `<div id=message class=unreaded><input type=hidden value=${data.user_id}>
                                         <div class=reply-body>
@@ -44,8 +37,6 @@ chatDetailSocket.onmessage = function(e) {
         is_read();
     }else if (data.type == "update_chat") {
         document.querySelector("#title_chat").innerHTML = `Добро пожаловать в чат "${data.chat_name}"`;
-        const close_modal_window = document.querySelector(".close");
-        document.location.replace(close_modal_window.href);
         console.log(`${data.chat_name} chat update`);
     }else if (data.type == "message_read") {
         let messages = document.querySelectorAll(".unreaded")
@@ -59,15 +50,37 @@ chatDetailSocket.onmessage = function(e) {
         const user_list = document.querySelector("#list_users");
         const new_user = `<p><a class=redirect href=/user/${user_info.owner_url}>${user_info.owner_name}</a></p>`
         user_list.innerHTML += new_user;
+
+        const old_messages = messages_html.innerHTML;
+        messages_html.innerHTML = `<p id=user_action>${user_info.owner_url} присоединился к чату!</p>`;
+        messages_html.innerHTML +=old_messages;
+
     }else if (data.type == "disconnect_to_chat") {
         document.querySelector(`#user_${data.user_username}`).remove()
+
+        const old_messages = messages_html.innerHTML;
+        messages_html.innerHTML = `<p id=user_action>${data.user_username} вышел из чата!</p>`;
+        messages_html.innerHTML +=old_messages;
     };
     document.querySelector("#chat-message-input").focus();
 };
 
 function is_read() {
-    fetch(`${window.location.pathname}is_read/`);
+    let data = new FormData();
+    data.append("agree", "True")
+    fetch(`${window.location.pathname}is_read/`, {method: "POST", body: data});
 }
+
+function connect_to_chat() {
+    if (is_new_user.value == 1) {
+        chatDetailSocket.send(JSON.stringify({
+            "type": "connect_to_chat",
+        }));
+        let data = new FormData();
+        data.append("agree", "True")
+        fetch(`${window.location.pathname}connect/`, {method: "POST", body: data})
+    };
+};
 
 function send_message(e) {
     const html_message = document.querySelector("#chat-message-input");
@@ -99,6 +112,9 @@ function submit_data(event) {
         data.append("title", `${chat_title.value}`)
         data.append("password", `${chat_password.value}`)
         fetch(`${window.location.pathname}update_chat/`, {method: 'POST', body: data});
+
+        const close_modal_window = document.querySelector(".close");
+        document.location.replace(close_modal_window.href);
     };
 };
 

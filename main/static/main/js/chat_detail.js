@@ -15,12 +15,14 @@ chatDetailSocket.onclose = function(e) {
 chatDetailSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
     const messages_html = document.querySelector(".messages");
-    if (data.type == "chat_message") {
-        const message_info = data.message_info;
+    if (data.type == "chat_message" | data.type =="connect_to_chat") {
         const no_messages = document.querySelector(".no_messages");
         if (no_messages) {
             no_messages.remove();
         };
+    };
+    if (data.type == "chat_message") {
+        const message_info = data.message_info;
         const old_messages = messages_html.innerHTML;
         messages_html.innerHTML = `<div id=message class=unreaded><input type=hidden value=${data.user_id}>
                                         <div class=reply-body>
@@ -48,7 +50,9 @@ chatDetailSocket.onmessage = function(e) {
     }else if (data.type =="connect_to_chat") {
         const user_info = data.user_info;
         const user_list = document.querySelector("#list_users");
-        const new_user = `<p><a class=redirect href=/user/${user_info.owner_url}>${user_info.owner_name}</a></p>`
+        const new_user = `<p id=user_${user_info.owner_url}>
+                              <a class=redirect href=/user/${user_info.owner_url}>${user_info.owner_name}</a>
+                          </p>`
         user_list.innerHTML += new_user;
 
         const old_messages = messages_html.innerHTML;

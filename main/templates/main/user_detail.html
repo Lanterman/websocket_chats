@@ -1,10 +1,27 @@
 <!DOCTYPE html>
+
+{% load static %}
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>user_detail</title>
+    <title>Профиль</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'main/css/user_style.css' %}">
+    <script src="https://kit.fontawesome.com/adb6ee4607.js" crossorigin="anonymous"></script>
 </head>
 <body>
+    <a id="back_to_main_page" href="{% url 'main_page' %}">&#8592;</a>
+    <h3 class="title"><i class="fas fa-users-cog"></i> Профиль пользователя <i>{{ user.username }}</i></h3>
+    <div id="user_info">
+        <p class="user"><label>Ник: </label><i id="username">{{ user.username }}</i></p>
+        <p class="user"><label>Имя: </label><i id="first_name">{{ user.first_name }}</i></p>
+        <p class="user"><label>Фамилия: </label><i id="last_name">{{ user.last_name }}</i></p>
+        <p class="user"><label>Email: </label><i id="email">{{ user.email }}</i></p>
+        <p class="user"><label>Статус админа: </label><i id="is_superuser">{{ user.is_superuser }}</i></p>
 
+        {% if request.user.id == user.id %}
+            <a class="redirect" href="{% url 'logout' %}">Выйти</a>
+        {% endif %}
+    </div>
 </body>
 </html>

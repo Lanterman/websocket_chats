@@ -1,0 +1,98 @@
+body {
+    background-color: #42cf17;
+    margin-top: 30px;
+}
+
+#back_to_main_page {
+    font-size: 40px;
+    text-decoration: None;
+    color: blue;
+    margin-left: 50px;
+}
+
+#back_to_main_page:hover {
+    color: red;
+}
+
+.title {
+    font-size: 30px;
+    margin: 80px 0px 70px 750px;
+}
+
+#user_info {
+    width: 400px;
+    margin-left: 800px;
+    font-size: 23px;
+}
+
+
+.user #username {
+    margin-left: 155px;
+}
+
+.user #first_name {
+    margin-left: 155px;
+}
+
+.user #last_name {
+    margin-left: 106px;
+}
+
+.user #email {
+    margin-left: 141px;
+}
+
+.user #is_superuser {
+    margin-left: 50px;
+}
+
+.title_auth {
+    text-align: center;
+    font-size: 30px;
+    margin: 100px 0px 50px 0px;
+}
+
+.form {
+    margin: 0px auto 30px auto;
+    width: 430px;
+}
+
+.form label {
+    font-size: 22px;
+}
+
+.form input {
+    float: right;
+    padding: 2px;
+    font-size: 16px;
+}
+
+.redirect {
+    float: left;
+    position: relative;
+    left: 46%;
+    transform: translate(-50%, 0);
+    font-size: 22px;
+    color: blue;
+    margin-top: 9px;
+}
+
+.button {
+    font-size: 18px;
+    margin-top: 5px;
+    float: right;
+    position: relative;
+    right: 42%;
+    font-size: 19px;
+}
+
+.redirect:hover {
+    color: red;
+    text-decoration: None;
+}
+
+.errors {
+    margin: 0px auto 30px auto;
+    width: 430px;
+    color: red;
+    font-size: 18px;

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+
+{% load static %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'main/css/user_style.css' %}">
+    <script src="https://kit.fontawesome.com/adb6ee4607.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <h3 class="title_auth"><i class="far fa-address-card"></i> {{ title }}</h3>
+
+    <form method="post">
+        {% csrf_token %}
+
+        {% if form.errors %}
+            <p class="errors">{{ errors }}</p>
+        {% endif %}
+
+        {% for f in form %}
+            <p class="form"><label for="">{{ f.label }}</label><i>{{ f }}</i></p>
+            <div class="errors">{{ f.errors }}</div>
+        {% endfor %}
+            <button class="button" type="submit">{{ button }}</button>
+    </form>
+
+    <a class="redirect" href="{% url redirect %}"><i>{{ redirect_name }}</i></a>
+</body>
+</html>

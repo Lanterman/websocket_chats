@@ -1,41 +1,26 @@
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
+from django.contrib.auth.views import LoginView
 from django.core.exceptions import PermissionDenied
 from django.db.models import Prefetch
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import DetailView, ListView
+from django.views.generic import DetailView, ListView, CreateView
 
+from main.forms import RegisterUserForm, LoginUserForm
 from main.models import Chat, Message
 
 
-# def main_page(request):
-#     """Main page"""
-#
-#     my_chats = Chat.objects.filter(users=request.user.id).prefetch_related(Prefetch(
-#         'chat_messages',
-#         queryset=Message.objects.exclude(is_read=request.user.id),
-#         to_attr="set_messages"
-#     ))
-#     chats_without_me = Chat.objects.exclude(users=request.user.id)
-#     context = {"my_chats": my_chats, "chats_without_me": chats_without_me}
-#     return render(request, 'main/main_page.html', context)
-
-
-# def chat_detail(request, chat_slug):
-#     """Chat detail"""
-#
-#     chat = Chat.objects.get(slug=chat_slug)
-#     chat_messages = Message.objects.filter(chat_id=chat.id).select_related("owner_id").prefetch_related("is_read")
-#     context = {"chat": chat, "chat_messages": chat_messages}
-#     return render(request, "main/chat_detail.html", context)
-
-
-class ListMainPageView(ListView):
+class ListMainPageView(LoginRequiredMixin, ListView):
     """Main page"""
 
     context_object_name = "my_chats"
     template_name = "main/main_page.html"
+    login_url = "/login/"
 
     def get_queryset(self):
         return Chat.objects.filter(users=self.request.user.id).prefetch_related(Prefetch(
@@ -51,12 +36,13 @@ class ListMainPageView(ListView):
         return context
 
 
-class ChatDetailView(DetailView):
+class ChatDetailView(LoginRequiredMixin, DetailView):
     """Chat detail"""
 
     context_object_name = "chat"
     slug_url_kwarg = "chat_slug"
     template_name = "main/chat_detail.html"
+    login_url = "/login/"
     queryset = Chat.objects.all().prefetch_related("users")
 
     def get_context_data(self, **kwargs):
@@ -67,8 +53,50 @@ class ChatDetailView(DetailView):
         return context
 
 
+@login_required(login_url='/login/')
 def user_detail(request, username):
-    return render(request, "main/user_detail.html")
+    user = User.objects.get(username=username)
+    return render(request, "main/user_detail.html", {"user": user})
+
+
+class RegisterUser(CreateView):
+    form_class = RegisterUserForm
+    template_name = 'main/user_auth.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Регистрация'
+        context["errors"] = "Ошибка регистрации! Попробуйте еще раз."
+        context["button"] = "Регистрация"
+        context["redirect_name"] = "Уже есть аккаунт?"
+        context["redirect"] = "login"
+        return context
+
+    def form_valid(self, form):
+        user = form.save()
+        login(self.request, user)
+        return redirect(reverse('main_page'))
+
+
+def logout_view(request):
+    logout(request)
+    return redirect(reverse('main_page'))
+
+
+class LoginUser(LoginView):
+    """User authorization"""
+
+    template_name = 'main/user_auth.html'
+    form_class = LoginUserForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Авторизация'
+        context["errors"] = "Такого пользователя не существует!"
+        context["button"] = "Войти"
+        context["redirect_name"] = "Зарегистрироваться"
+        context["redirect"] = "register"
+        return context
 
 
 @csrf_exempt
@@ -76,9 +104,11 @@ def add_message(request, chat_slug):
     """Add message"""
 
     message = request.POST.get("message")
-    message_obj = Message.objects.create(message=message, chat_id_id=chat_slug, owner_id_id=request.user.id)
-    message_obj.is_read.add(request.user)
-    return HttpResponse(status=200)
+    if message is not None:
+        message_obj = Message.objects.create(message=message, chat_id_id=chat_slug, owner_id_id=request.user.id)
+        message_obj.is_read.add(request.user)
+        return HttpResponse(status=200)
+    raise PermissionDenied()
 
 
 @csrf_exempt
@@ -87,9 +117,11 @@ def update_chat(request, chat_slug):
 
     chat_password = request.POST.get("password")
     chat_title = request.POST.get("title")
-    chat_password = chat_password if len(chat_password) <= 100 else chat_password[:101]
-    Chat.objects.filter(id=chat_slug).update(name=chat_title, password=chat_password)
-    return HttpResponse(status=200)
+    if chat_password is not None:
+        chat_password = chat_password if len(chat_password) <= 100 else chat_password[:101]
+        Chat.objects.filter(id=chat_slug).update(name=chat_title, password=chat_password)
+        return HttpResponse(status=200)
+    raise PermissionDenied()
 
 
 @csrf_exempt

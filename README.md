@@ -11,7 +11,7 @@ This project represents chats in real life and has the following functionality:
 
 #### 1) clone the repository
 ```
-https://github.com/Lanterman/websocket_chats.git
+git clone https://github.com/Lanterman/websocket_chats.git
 ```
 #### 2) Create and run docker-compose
 ```

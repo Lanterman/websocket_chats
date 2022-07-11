@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-ajvotd_%+#^clf1fgb@r@hmt1bq=!o6bhoqf%hui3=c*530#gb
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -93,10 +93,10 @@ CHANNEL_LAYERS = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'django_channels',
+        'NAME': 'postgres',
         'USER': 'postgres',
-        'PASSWORD': 'karmavdele',
-        'HOST': 'localhost',
+        'PASSWORD': 'postgres',
+        'HOST': 'postgres_db',
         'PORT': 5432,
     }
 }

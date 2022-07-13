@@ -4,7 +4,6 @@ const chatDetailSocket = new WebSocket('ws://' + window.location.host + '/ws/cha
 
 chatDetailSocket.onopen = function(e) {
     console.log("Ok");
-    is_read();
     connect_to_chat();
 };
 
@@ -36,7 +35,6 @@ chatDetailSocket.onmessage = function(e) {
                                         </div>
                                     </div>`;
         messages_html.innerHTML += old_messages;
-        is_read();
     }else if (data.type == "update_chat") {
         document.querySelector("#title_chat").innerHTML = `Добро пожаловать в чат "${data.chat_name}"`;
         console.log(`${data.chat_name} chat update`);
@@ -69,12 +67,6 @@ chatDetailSocket.onmessage = function(e) {
     document.querySelector("#chat-message-input").focus();
 };
 
-function is_read() {
-    let data = new FormData();
-    data.append("agree", "True")
-    fetch(`${window.location.pathname}is_read/`, {method: "POST", body: data});
-}
-
 function connect_to_chat() {
     if (is_new_user.value == 1) {
         chatDetailSocket.send(JSON.stringify({
@@ -95,9 +87,11 @@ function send_message(e) {
                 "message": html_message.value,
             }));
 
+        const csrf_token = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const request = new Request(window.location.pathname, {headers: {'X-CSRFToken': csrf_token}});
         let data = new FormData();
-        data.append("message", `${html_message.value}`)
-        fetch(`${window.location.pathname}add_message/`, {method: 'POST', body: data});
+        data.append("message", html_message.value)
+        fetch(request, {method: 'POST', body: data})
 
         html_message.value = "";
     };

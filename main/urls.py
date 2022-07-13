@@ -12,7 +12,5 @@ urlpatterns = [
     path('register/', views.RegisterUser.as_view(), name='register'),
     path('logout/', views.logout_view, name='logout'),
     path('login/', views.LoginUser.as_view(), name='login'),
-    path("chat/<slug:chat_slug>/add_message/", views.add_message, name="add_message"),
     path("chat/<slug:chat_slug>/update_chat/", views.update_chat, name="update_chat"),
-    path("chat/<slug:chat_slug>/is_read/", views.is_read, name="is_read"),
 ]

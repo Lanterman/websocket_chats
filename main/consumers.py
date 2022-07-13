@@ -87,10 +87,7 @@ class ChatDetailConsumer(AsyncWebsocketConsumer):
     async def is_read(self):
         """Read messages"""
 
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {'type': 'message_read', 'message_info': "connect", "user_id": self.user.id}
-        )
+        await self.channel_layer.group_send(self.room_group_name, {'type': 'message_read', "user_id": self.user.id})
 
     async def receive(self, text_data=None, bytes_data=None):
         text_data_json = json.loads(text_data)
@@ -129,9 +126,8 @@ class ChatDetailConsumer(AsyncWebsocketConsumer):
             )
 
     async def message_read(self, event):
-        message_info = event["message_info"]
         user_id = event["user_id"]
-        await self.send(text_data=json.dumps({"type": "message_read", "message_info": message_info, "user_id": user_id}))
+        await self.send(text_data=json.dumps({"type": "message_read", "message_info": "connect", "user_id": user_id}))
 
     async def chat_message(self, event):
         message_info = event['message_info']

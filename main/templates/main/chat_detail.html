@@ -84,6 +84,7 @@
     {% endif %}
 
     <div class="panel">
+        {% csrf_token %}
         <textarea id="chat-message-input" placeholder="Введите сообщение" required cols="85" rows="3"></textarea>
         <input type="button" id="chat-message-submit" value="Отправить" onclick="send_message()">
     </div>

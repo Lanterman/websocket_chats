@@ -12,8 +12,8 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, CreateView
 
-from main.forms import RegisterUserForm, LoginUserForm
-from main.models import Chat, Message
+from .forms import RegisterUserForm, LoginUserForm
+from .models import Chat, Message
 
 
 def read_messages(chat_slug, user_object):

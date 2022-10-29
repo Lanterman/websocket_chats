@@ -1,13 +1,13 @@
 import debug_toolbar
 
-from websocket_chats import settings
+from config import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('main.urls'), name="main"),
+    path('', include('scr.urls'), name="apps"),
     path('__debug__/', include(debug_toolbar.urls)),
 ]
 

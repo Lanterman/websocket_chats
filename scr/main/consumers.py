@@ -3,7 +3,7 @@ import json
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
 
-from main.models import Chat
+from .models import Chat
 
 
 class MainPageConsumer(WebsocketConsumer):

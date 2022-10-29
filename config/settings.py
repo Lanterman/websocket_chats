@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'channels',
     'debug_toolbar',
 
-    "main.apps.MainConfig",
+    "scr.main.apps.MainConfig",
 ]
 
 MIDDLEWARE = [
@@ -56,7 +56,7 @@ MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
-ROOT_URLCONF = 'websocket_chats.urls'
+ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
     {
@@ -76,14 +76,14 @@ TEMPLATES = [
 
 # WSGI_APPLICATION = 'websocket_chats.wsgi.application'
 
-ASGI_APPLICATION = 'websocket_chats.asgi.application'
+ASGI_APPLICATION = 'config.asgi.application'
 
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            # "hosts": [('127.0.0.1', 6379)],
-            "hosts": [('Redis', 6379)]
+            "hosts": [('127.0.0.1', 6379)],
+            # "hosts": [('Redis', 6379)]
         },
     },
 }
@@ -94,10 +94,10 @@ CHANNEL_LAYERS = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'postgres_db',
+        'NAME': 'web_chat',
+        'USER': 'lanterman',
+        'PASSWORD': 'karmavdele',
+        'HOST': '127.0.0.1',
         'PORT': 5432,
     }
 }

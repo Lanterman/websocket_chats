@@ -4,8 +4,9 @@ from selenium import webdriver
 from selenium.webdriver.common import by
 
 
+register_url = "http://127.0.0.1:8000/register/"
 login_url = "http://127.0.0.1:8000/login/"
-main_url = "http://127.0.0.1:8000"
+main_url = "http://127.0.0.1:8000/"
 
 
 def write_to_json_file(data: dict) -> None:
@@ -33,26 +34,50 @@ def get_user_info(driver) -> dict:
     return user_info
 
 
+def add_owner_to_chat(driver, link_list: list, chats_info: list) -> list:
+    """Add owner info to chats"""
+
+    for number, link in enumerate(link_list):
+        driver.get(link)
+        owner = driver.find_element(by.By.ID, "user_info")
+
+        owner_info = {
+            "username": owner.find_element(by.By.ID, "username").text,
+            "first_name": owner.find_element(by.By.ID, "first_name").text,
+            "last_name": owner.find_element(by.By.ID, "last_name").text,
+            "email": owner.find_element(by.By.ID, "email").text,
+            "is_admin": owner.find_element(by.By.ID, "is_superuser").text,
+        }
+
+        chats_info[number]["chat_owner"] = owner_info
+
+    return chats_info
+
+
 def get_chats_without_user(driver) -> list:
     """Get chats without user"""
 
-    chats_info = []
+    chats_info, links_to_owner = [], []
     chats = driver.find_elements(by.By.CLASS_NAME, "chat_without_me")
 
     for chat in chats:
         is_password = chat.find_element(by.By.CLASS_NAME, "is_password").find_element(by.By.TAG_NAME, "i").text
         chat_name = chat.find_element(by.By.CLASS_NAME, "chat_name").find_element(by.By.CLASS_NAME, "redirect")
-        chat_owner = chat.find_element(by.By.CLASS_NAME, "chat_owner_name").find_element(by.By.CLASS_NAME, "redirect")
+        link = chat.find_element(by.By.CLASS_NAME, "chat_owner_name").find_element(
+            by.By.CLASS_NAME, "redirect").get_attribute("href")
 
         chat_info = {
             "chat_name": {"name": chat_name.text, "link_to_chat": chat_name.get_attribute("href")},
-            "chat_owner": {"name": chat_owner.text, "link_to_owner": chat_owner.get_attribute("href")},
+            "chat_owner": "",
             "is_password": is_password
         }
 
         chats_info.append(chat_info)
+        links_to_owner.append(link)
 
-    return chats_info
+    add_owner = add_owner_to_chat(driver, links_to_owner, chats_info)
+
+    return add_owner
 
 
 def parsing_main_page(driver) -> dict:
@@ -83,3 +108,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+    print("add register, info chat if it doesn't have password")

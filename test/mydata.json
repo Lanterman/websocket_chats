@@ -1,0 +1,34 @@
+[
+{
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+        "password": "pbkdf2_sha256$320000$sjEBufymOkzVoXnTZynNVC$8aGpm89NfKduFyAoqDEXUwL+tLz/8V215x0urjMp1mY=",
+        "last_login": "2022-10-30T08:44:47.554Z",
+        "is_superuser": false,
+        "username": "username",
+        "first_name": "test",
+        "last_name": "test",
+        "email": "test@example.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2022-10-30T08:44:47.353Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "main.chat",
+    "pk": 1,
+    "fields": {
+        "name": "lan1",
+        "slug": "1",
+        "password": "1111",
+        "pub_date": "2022-07-15T13:21:28.876Z",
+        "owner_id": 1,
+        "users": [
+            1
+        ]
+    }
+}
+]

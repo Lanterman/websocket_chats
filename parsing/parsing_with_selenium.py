@@ -1,11 +1,13 @@
 import os
 import json
+import logging as log
 
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.common import by
 
 
+log.basicConfig(format="[%(asctime)s | %(levelname)s]: %(message)s", level=log.INFO, datefmt='%m.%d.%Y %H:%M:%S')
 load_dotenv(dotenv_path="./parsing/.env")
 
 
@@ -122,10 +124,33 @@ def parsing_main_page(driver) -> None:
     write_to_json_file(data)
 
 
+def info_log(func):
+    """Decorator informing about the progress of the parser"""
+
+    def logs_output():
+        log.info(msg="Started the selenium parser")
+        log.info(msg="Data is written to the parsing_with_selenium.json file")
+        func()
+        log.info(msg="Finished the selenium parser")
+        log.info(msg="Check the parsing_with_selenium.json file")
+
+    return logs_output
+
+
+def set_option():
+    """Set options for webdriver"""
+
+    option = webdriver.ChromeOptions()
+    option.add_argument("headless")
+    return option
+
+
+@info_log
 def main() -> None:
     """Main function"""
 
-    driver = webdriver.Chrome()
+    option = set_option()
+    driver = webdriver.Chrome(options=option)
     driver.get(url=os.getenv('LOGIN_URL'))
 
     authorization(driver)

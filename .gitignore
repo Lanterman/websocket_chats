@@ -5,5 +5,5 @@ __pycache__
 scr/main/migrations/*
 !scr/main/migrations/__init__.py
 
-websocket_chats.json
+parsing_with_selenium.json
 dump.rdb

@@ -55,9 +55,9 @@ chatDetailSocket.onmessage = function(e) {
 
         const old_messages = messages_html.innerHTML;
         messages_html.innerHTML = `<p id=user_action>${user_info.owner_url} присоединился к чату!</p>`;
-        messages_html.innerHTML +=old_messages;
+        messages_html.innerHTML += old_messages;
 
-    }else if (data.type == "disconnect_to_chat") {
+    }else if (data.type == "disconnect_from_chat") {
         document.querySelector(`#user_${data.user_username}`).remove()
 
         const old_messages = messages_html.innerHTML;
@@ -125,7 +125,7 @@ function delete_chat(e) {
 function leave_chat(e) {
     if (confirm("Вы действительно хотите выйти из чата?")) {
         chatDetailSocket.send(JSON.stringify({
-            "type": "disconnect_to_chat",
+            "type": "disconnect_from_chat",
         }));
         window.location.pathname = `chat/${chat_slug}/leave/`;
     };

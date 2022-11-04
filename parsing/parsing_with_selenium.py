@@ -90,7 +90,7 @@ def get_chats_without_user(driver) -> list:
 
     for chat in chats:
         chat_name = chat.find_element(by.By.CLASS_NAME, "chat_name").find_element(by.By.CLASS_NAME, "redirect")
-        link_to_owner_html = chat.find_element(by.By.CLASS_NAME, "chat_owner_name").find_element(
+        link_to_owner = chat.find_element(by.By.CLASS_NAME, "chat_owner_name").find_element(
             by.By.CLASS_NAME, "redirect").get_attribute("href")
         is_password = chat.find_element(by.By.CLASS_NAME, "is_password").find_element(by.By.TAG_NAME, "i").text
 
@@ -102,7 +102,7 @@ def get_chats_without_user(driver) -> list:
         }
 
         chats_info.append(chat_info)
-        links_to_owner.append(link_to_owner_html)
+        links_to_owner.append(link_to_owner)
 
         if is_password != "Да":
             links_to_chat.append(chat_name.get_attribute("href"))

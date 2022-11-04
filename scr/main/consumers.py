@@ -9,6 +9,11 @@ from .models import Chat
 class MainPageConsumer(WebsocketConsumer):
     """Consumer for main page"""
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(args, kwargs)
+        self.user = None
+        self.room_group_name = None
+
     def connect(self):
         self.user = self.scope['user']
         self.room_group_name = "main_page"
@@ -16,7 +21,7 @@ class MainPageConsumer(WebsocketConsumer):
         self.accept()
 
     def disconnect(self, close_code):
-        print(f"Error code: {close_code}")
+        self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     def search_chats(self, data):
         """Search chats by name"""
@@ -73,6 +78,12 @@ class MainPageConsumer(WebsocketConsumer):
 class ChatDetailConsumer(AsyncWebsocketConsumer):
     """Consumer for chat detail"""
 
+    def __init__(self):
+        super().__init__()
+        self.chat_slug = None
+        self.user = None
+        self.room_group_name = None
+
     async def connect(self):
         self.chat_slug = self.scope['url_route']['kwargs']['chat_slug']
         self.user = self.scope['user']
@@ -119,10 +130,10 @@ class ChatDetailConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 {'type': 'connect_to_chat', "user_info": user_info}
             )
-        elif action_type == "disconnect_to_chat":
+        elif action_type == "disconnect_from_chat":
             await self.channel_layer.group_send(
                 self.room_group_name,
-                {'type': 'disconnect_to_chat', "user_username": self.user.username}
+                {'type': 'disconnect_from_chat', "user_username": self.user.username}
             )
 
     async def message_read(self, event):
@@ -130,9 +141,9 @@ class ChatDetailConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({"type": "message_read", "message_info": "connect", "user_id": user_id}))
 
     async def chat_message(self, event):
-        message_info = event['message_info']
+        mes_info = event['message_info']
         user_id = event["user_id"]
-        await self.send(text_data=json.dumps({"type": "chat_message", 'message_info': message_info, "user_id": user_id}))
+        await self.send(text_data=json.dumps({"type": "chat_message", 'message_info': mes_info, "user_id": user_id}))
 
     async def update_chat(self, event):
         chat_title = event["chat_name"]
@@ -142,6 +153,6 @@ class ChatDetailConsumer(AsyncWebsocketConsumer):
         user_info = event["user_info"]
         await self.send(text_data=json.dumps({"type": "connect_to_chat", 'user_info': user_info}))
 
-    async def disconnect_to_chat(self, event):
+    async def disconnect_from_chat(self, event):
         user_username = event["user_username"]
-        await self.send(text_data=json.dumps({"type": "disconnect_to_chat", "user_username": user_username}))
+        await self.send(text_data=json.dumps({"type": "disconnect_from_chat", "user_username": user_username}))

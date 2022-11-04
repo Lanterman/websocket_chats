@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.common import by
 from channels.testing import ChannelsLiveServerTestCase
+from selenium.webdriver.common.alert import Alert
 
 
 class Config(ChannelsLiveServerTestCase):
@@ -16,7 +17,7 @@ class Config(ChannelsLiveServerTestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls.driver.close()
+        cls.driver.quit()
 
     def authentication(self, username="username"):
         """Authentication for tests"""
@@ -82,9 +83,33 @@ class TestChat(Config):
         assert chat.text == "lan1", chat.text
         assert chat.get_attribute("href")[22:] == "/chat/1/", chat.get_attribute("href")[22:]
 
-    def test_2_delete_chat(self):
-        """Testing delete chat"""
+    def test_2_valid_connect_to_chat(self):
+        """Testing valid connect to chat"""
+
         self.authentication()
+        self.driver.get(f"{self.live_server_url}/chat/1/")
+        alert = Alert(self.driver)
+        assert alert.text == "Введите пароль", alert.text
+        alert.send_keys("1111")
+        alert.accept()
+        assert self.driver.current_url[22:] == "/chat/1/", self.driver.current_url[22:]
+
+    def test_2_invalid_connect_to_chat(self):
+        """Testing valid connect to chat"""
+
+        self.authentication()
+        self.driver.get(f"{self.live_server_url}/chat/1/")
+        alert = Alert(self.driver)
+        assert alert.text == "Введите пароль", alert.text
+        alert.send_keys("111")
+        alert.accept()
+        assert alert.text == "Неверный пароль!", alert.text
+        alert.accept()
+        assert self.driver.current_url[22:] == "/", self.driver.current_url[22:]
+
+    def test_3_valid_delete_chat(self):
+        """Testing delete chat"""
+        self.authentication("user_name")
         self.driver.get(f"{self.live_server_url}/chat/1/")
         title = self.driver.find_element(by.By.ID, "title_chat")
         assert self.driver.current_url[22:] == "/chat/1/", self.driver.current_url[22:]
@@ -92,3 +117,19 @@ class TestChat(Config):
 
         self.driver.get(f"{self.live_server_url}/chat/1/delete/")
         assert self.driver.current_url[22:] == "/", self.driver.current_url[22:]
+
+    def test_3_invalid_delete_chat(self):
+        """Testing delete chat"""
+        self.authentication("username")
+        self.driver.get(f"{self.live_server_url}/chat/1/")
+        alert = Alert(self.driver)
+        assert alert.text == "Введите пароль", alert.text
+        alert.send_keys("1111")
+        alert.accept()
+        title = self.driver.find_element(by.By.ID, "title_chat")
+        assert self.driver.current_url[22:] == "/chat/1/", self.driver.current_url[22:]
+        assert title.text == 'Добро пожаловать в чат "lan1"', title.text
+        self.driver.get(f"{self.live_server_url}/chat/1/delete/")
+        assert self.driver.current_url[22:] == "/chat/1/delete/", self.driver.current_url[22:]
+        error_text = self.driver.find_element(by.By.TAG_NAME, "h1").text
+        assert error_text == "403 Forbidden", error_text

@@ -6,9 +6,11 @@
                 <a href="#close" title="Close" class="close">×</a>
             </div>
             <div class="modal-body">
+                {% csrf_token %}
                 <p id="chat_title">Название <input id="input_name" type="text" placeholder="Введите название"
                                                    maxlength="50" required value="{{ chat.name }}"></p>
-                <p id="chat_password">Пароль <input id="input_password" type="password" placeholder="Необязательно" maxlength="100"></p>
+                <p id="chat_password">Пароль <input id="input_password" type="password" placeholder="Необязательно"
+                                                    maxlength="100" value="{{ chat.password }}"></p>
                 <input id="create_button" type="button" value="Создать" onclick="submit_data()">
             </div>
         </div>

@@ -99,6 +99,8 @@ DATABASES = {
         'PASSWORD': 'karmavdele',
         'HOST': '127.0.0.1',
         'PORT': 5432,
+
+        'TEST': {'NAME': os.path.join(BASE_DIR, "test_db.db")}
     }
 }
 

@@ -123,7 +123,6 @@ class LoginUser(LoginView):
         return context
 
 
-@csrf_exempt
 def update_chat(request, chat_slug):
     """Update chat"""
 
@@ -153,16 +152,14 @@ def leave_chat(request, chat_slug):
     """Leave chat if you aren't owner and are member of chat"""
 
     chat = Chat.objects.filter(id=chat_slug)[0]
-    if request.user.id != chat.owner_id_id:
-        if request.user in chat.users.all():
-            chat.users.remove(request.user)
-            message_obj = Message.objects.create(message=f"{request.user.username} вышел из чата!", chat_id_id=chat_slug)
-            message_obj.is_read.add(request.user)
-            return redirect(reverse('main_page'))
+    if request.user.id != chat.owner_id_id and request.user in chat.users.all():
+        chat.users.remove(request.user)
+        message_obj = Message.objects.create(message=f"{request.user.username} вышел из чата!", chat_id_id=chat_slug)
+        message_obj.is_read.add(request.user)
+        return redirect(reverse('main_page'))
     raise PermissionDenied()
 
 
-@csrf_exempt
 def connect_to_chat(request, chat_slug):
     """Connect user to chat"""
 

@@ -21,7 +21,7 @@ class MainPageConsumer(WebsocketConsumer):
         self.accept()
 
     def disconnect(self, close_code):
-        self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+        async_to_sync(self.channel_layer.group_discard)(self.room_group_name, self.channel_name)
 
     def search_chats(self, data):
         """Search chats by name"""

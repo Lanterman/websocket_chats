@@ -67,6 +67,12 @@ chatDetailSocket.onmessage = function(e) {
     document.querySelector("#chat-message-input").focus();
 };
 
+function get_request(url="") {
+    const csrf_token = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const request = new Request(`${window.location.pathname}${url}`, {headers: {'X-CSRFToken': csrf_token}});
+    return request
+}
+
 function connect_to_chat() {
     if (is_new_user.value == 1) {
         chatDetailSocket.send(JSON.stringify({
@@ -74,7 +80,7 @@ function connect_to_chat() {
         }));
         let data = new FormData();
         data.append("agree", "True")
-        fetch(`${window.location.pathname}connect/`, {method: "POST", body: data})
+        fetch(get_request(url="connect/"), {method: "POST", body: data})
     };
 };
 
@@ -87,11 +93,9 @@ function send_message(e) {
                 "message": html_message.value,
             }));
 
-        const csrf_token = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        const request = new Request(window.location.pathname, {headers: {'X-CSRFToken': csrf_token}});
         let data = new FormData();
         data.append("message", html_message.value)
-        fetch(request, {method: 'POST', body: data})
+        fetch(get_request(), {method: 'POST', body: data})
 
         html_message.value = "";
     };
@@ -106,10 +110,11 @@ function submit_data(event) {
             "chat_title": chat_title.value,
             "type": "update_chat",
         }));
+
         let data = new FormData();
         data.append("title", `${chat_title.value}`)
         data.append("password", `${chat_password.value}`)
-        fetch(`${window.location.pathname}update_chat/`, {method: 'POST', body: data});
+        fetch(get_request(url="update_chat/"), {method: 'POST', body: data});
 
         const close_modal_window = document.querySelector(".close");
         document.location.replace(close_modal_window.href);

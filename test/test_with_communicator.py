@@ -38,14 +38,14 @@ class Config(TestCase):
 class TestMainPageConsumer(Config):
     """Testing MainPageConsumer consumer"""
 
-    async def test_create_chat(self):
+    async def test_delete_chat(self):
         """Testing create chat"""
 
-        test_data = {"type": "create_chat", "chat_slug": 2}
+        test_data = {"chat_id": 1, "type": "delete_chat"}
         communicator = await self.launch_websocket_communicator()
 
-        await communicator.send_json_to({"chat_title": "test", "chat_password": "password", "type": "create_chat"})
-        response = await communicator.receive_json_from()  # django.db.utils.InterfaceError: connection already closed
+        await communicator.send_json_to({"chat_id": 1, "type": "delete_chat"})
+        response = await communicator.receive_json_from()
         assert response == test_data, response
 
         await communicator.disconnect()

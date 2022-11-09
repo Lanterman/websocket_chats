@@ -82,8 +82,8 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
-            # "hosts": [('Redis', 6379)]
+            # "hosts": [('127.0.0.1', 6379)],
+            "hosts": [('Redis', 6379)]
         },
     },
 }
@@ -94,10 +94,10 @@ CHANNEL_LAYERS = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'web_chat',
-        'USER': 'lanterman',
-        'PASSWORD': 'karmavdele',
-        'HOST': '127.0.0.1',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'postgres_db',
         'PORT': 5432,
 
         'TEST': {'NAME': os.path.join(BASE_DIR, "test_db.db")}

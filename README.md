@@ -7,6 +7,10 @@ This project represents chats in real life and has the following functionality:
 - search chats;
 - etc.
 
+Project tested with: TestCase, WebsocketCommunicator, ChannelsLiveServerTestCase.
+
+The project is also parsed with selenium.
+
 ### Launch of the project
 
 #### 1) clone the repository
@@ -24,4 +28,18 @@ http://127.0.0.1:8000/
 or
 ```
 http://0.0.0.0:8000/
+```
+
+### Launch of the tests
+
+#### 1) Run command
+```
+python manage.py test
+```
+
+### Launch of the selenium parser
+
+#### 1) Run command
+```
+python parsing/parsing_with_selenium.py
 ```

@@ -30,13 +30,6 @@ or
 http://0.0.0.0:8000/
 ```
 
-### Launch of the tests
-
-#### 1) Run command
-```
-python manage.py test
-```
-
 ### Launch of the selenium parser
 
 #### 1) Run command

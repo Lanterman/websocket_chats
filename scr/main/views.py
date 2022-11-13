@@ -19,7 +19,7 @@ from .models import Chat, Message
 def read_messages(chat_slug, user_object):
     """Read unread messages"""
 
-    messages = Message.objects.filter(chat_id=chat_slug).exclude(owner_id_id=user_object.id).exclude(
+    messages = Message.objects.filter(chat_id_id=chat_slug).exclude(owner_id_id=user_object.id).exclude(
         is_read=user_object.id)
     [message.is_read.add(user_object) for message in messages]
 

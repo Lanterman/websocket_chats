@@ -1,12 +1,10 @@
-import json
-
-from asgiref.sync import async_to_sync
-from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
+from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 from .models import Chat
 
 
-class MainPageConsumer(WebsocketConsumer):
+class MainPageConsumer(AsyncJsonWebsocketConsumer):
     """Consumer for main page"""
 
     def __init__(self, *args, **kwargs):
@@ -14,15 +12,16 @@ class MainPageConsumer(WebsocketConsumer):
         self.user = None
         self.room_group_name = None
 
-    def connect(self):
+    async def connect(self):
         self.user = self.scope['user']
         self.room_group_name = "main_page"
-        async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
-        self.accept()
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.accept()
 
-    def disconnect(self, close_code):
-        async_to_sync(self.channel_layer.group_discard)(self.room_group_name, self.channel_name)
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
+    @database_sync_to_async
     def search_chats(self, data):
         """Search chats by name"""
 
@@ -40,8 +39,9 @@ class MainPageConsumer(WebsocketConsumer):
             }
             chat_list.append(info_chat)
 
-        self.send(text_data=json.dumps({"chats_info_list": chat_list, "type": data["type"]}))
+        return chat_list
 
+    @database_sync_to_async
     def create_chat(self, data):
         """Create chat"""
 
@@ -51,31 +51,27 @@ class MainPageConsumer(WebsocketConsumer):
         new_chat = Chat.objects.create(name=chat_title, password=chat_password, owner_id_id=self.user.id)
         new_chat.users.add(self.user)
         Chat.objects.filter(id=new_chat.id).update(slug=new_chat.id)
+        return new_chat.id
 
-        self.send(text_data=json.dumps({"type": "create_chat", "chat_slug": new_chat.id}))
+    async def receive_json(self, content, **kwargs):
+        action_type = content["type"]
 
-    def receive(self, text_data=None, bytes_data=None):
-        text_data_json = json.loads(text_data)
-        action_type = text_data_json["type"]
         if action_type == "search":
-            self.search_chats(text_data_json)
+            chat_list = await self.search_chats(content)
+            await self.send_json(content={"chats_info_list": chat_list, "type": action_type})
         elif action_type == "create_chat":
-            self.create_chat(text_data_json)
+            chat_slug = await self.create_chat(content)
+            await self.send_json(content={"type": "create_chat", "chat_slug": chat_slug})
         else:
-            chat_id = text_data_json['chat_id']
+            chat_id = content['chat_id']
+            await self.channel_layer.group_send(self.room_group_name, {'type': 'delete_chat', "chat_id": chat_id})
 
-            async_to_sync(self.channel_layer.group_send)(
-                self.room_group_name,
-                {'type': 'delete_chat', "chat_id": chat_id}
-            )
-
-    def delete_chat(self, event):
+    async def delete_chat(self, event):
         chat_id = event["chat_id"]
+        await self.send_json(content={"type": "delete_chat", "chat_id": chat_id})
 
-        self.send(text_data=json.dumps({"type": "delete_chat", "chat_id": chat_id}))
 
-
-class ChatDetailConsumer(AsyncWebsocketConsumer):
+class ChatDetailConsumer(AsyncJsonWebsocketConsumer):
     """Consumer for chat detail"""
 
     def __init__(self):
@@ -100,11 +96,10 @@ class ChatDetailConsumer(AsyncWebsocketConsumer):
 
         await self.channel_layer.group_send(self.room_group_name, {'type': 'message_read', "user_id": self.user.id})
 
-    async def receive(self, text_data=None, bytes_data=None):
-        text_data_json = json.loads(text_data)
-        action_type = text_data_json["type"]
+    async def receive_json(self, content, **kwargs):
+        action_type = content["type"]
         if action_type == "send_message":
-            message = text_data_json['message']
+            message = content['message']
             message_info = {
                 "message": message.replace("\n", "<br>"),
                 "owner_name": self.user.username if len(self.user.username) < 50 else self.user.username[:48] + "...",
@@ -116,10 +111,11 @@ class ChatDetailConsumer(AsyncWebsocketConsumer):
             )
             await self.is_read()
         elif action_type == "update_chat":
-            chat_title = text_data_json["chat_title"]
+            chat_title = content["chat_title"]
+            chat_password = content["chat_password"]
             await self.channel_layer.group_send(
                 self.room_group_name,
-                {'type': 'update_chat', "chat_name": chat_title}
+                {'type': 'update_chat', "chat_name": chat_title, "chat_password": chat_password}
             )
         elif action_type == "connect_to_chat":
             user_info = {
@@ -138,21 +134,22 @@ class ChatDetailConsumer(AsyncWebsocketConsumer):
 
     async def message_read(self, event):
         user_id = event["user_id"]
-        await self.send(text_data=json.dumps({"type": "message_read", "message_info": "connect", "user_id": user_id}))
+        await self.send_json(content={"type": "message_read", "message_info": "connect", "user_id": user_id})
 
     async def chat_message(self, event):
         mes_info = event['message_info']
         user_id = event["user_id"]
-        await self.send(text_data=json.dumps({"type": "chat_message", 'message_info': mes_info, "user_id": user_id}))
+        await self.send_json(content={"type": "chat_message", 'message_info': mes_info, "user_id": user_id})
 
     async def update_chat(self, event):
         chat_title = event["chat_name"]
-        await self.send(text_data=json.dumps({"type": "update_chat", "chat_name": chat_title}))
+        chat_password = event["chat_password"]
+        await self.send_json(content={"type": "update_chat", "chat_name": chat_title, "chat_password": chat_password})
 
     async def connect_to_chat(self, event):
         user_info = event["user_info"]
-        await self.send(text_data=json.dumps({"type": "connect_to_chat", 'user_info': user_info}))
+        await self.send_json(content={"type": "connect_to_chat", 'user_info': user_info})
 
     async def disconnect_from_chat(self, event):
         user_username = event["user_username"]
-        await self.send(text_data=json.dumps({"type": "disconnect_from_chat", "user_username": user_username}))
+        await self.send_json(content={"type": "disconnect_from_chat", "user_username": user_username})

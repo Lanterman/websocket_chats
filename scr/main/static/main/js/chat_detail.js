@@ -36,7 +36,10 @@ chatDetailSocket.onmessage = function(e) {
                                     </div>`;
         messages_html.innerHTML += old_messages;
     }else if (data.type == "update_chat") {
+        document.querySelector("#tab_name").innerHTML = `${data.chat_name}`;
         document.querySelector("#title_chat").innerHTML = `Добро пожаловать в чат "${data.chat_name}"`;
+        document.querySelector("#input_name").value = `${data.chat_name}`;
+        document.querySelector("#input_password").value = `${data.chat_password}`;
         console.log(`${data.chat_name} chat update`);
     }else if (data.type == "message_read") {
         let messages = document.querySelectorAll(".unreaded")
@@ -108,6 +111,7 @@ function submit_data(event) {
     if (chat_title.value){
         chatDetailSocket.send(JSON.stringify({
             "chat_title": chat_title.value,
+            "chat_password": chat_password.value,
             "type": "update_chat",
         }));
 

@@ -94,13 +94,13 @@ class TestChatDetailConsumer(Config):
     async def test_update_chat(self):
         """Testing update chat name"""
 
-        test_data = {"type": "update_chat", "chat_name": "update_title"}
+        test_data = {"type": "update_chat", "chat_name": "update_title", "chat_password": ""}
         communicator = await self.launch_websocket_communicator(consumer=ChatDetailConsumer, path="/ws/chat/1/")
 
         response = await communicator.receive_json_from()
         assert response == {'type': 'message_read', 'message_info': 'connect', 'user_id': self.user.id}, response
 
-        await communicator.send_json_to(data={"type": "update_chat", "chat_title": "update_title"})
+        await communicator.send_json_to(data={"type": "update_chat", "chat_title": "update_title", "chat_password": ""})
         response = await communicator.receive_json_from()
         assert response == test_data, response
 

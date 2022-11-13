@@ -18,6 +18,7 @@ class Config(ChannelsLiveServerTestCase):
     @classmethod
     def tearDownClass(cls):
         cls.driver.quit()
+        super().tearDownClass()
 
     def authentication(self, username="username"):
         """Authentication for tests"""

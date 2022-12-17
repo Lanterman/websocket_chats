@@ -6,4 +6,5 @@ scr/main/migrations/*
 !scr/main/migrations/__init__.py
 
 parsing_with_selenium.json
+data_by_asyncio_parser.json
 dump.rdb

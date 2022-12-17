@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+
+load_dotenv(dotenv_path='.env')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,10 +24,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ajvotd_%+#^clf1fgb@r@hmt1bq=!o6bhoqf%hui3=c*530#gb'
+SECRET_KEY = os.environ.get("DOC_SECRET_KEY", os.environ["SECRET_KEY"])
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DOC_DEBUG", os.environ["DEBUG"])
 
 ALLOWED_HOSTS = ["*"]
 
@@ -82,8 +86,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            # "hosts": [('127.0.0.1', 6379)],
-            "hosts": [('Redis', 6379)]
+            "hosts": [(os.environ.get('DOC_HOST_CL', os.environ['HOST_DB']), 6379)]
         },
     },
 }
@@ -93,12 +96,12 @@ CHANNEL_LAYERS = {
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'postgres_db',
-        'PORT': 5432,
+        'ENGINE': os.environ.get('DOC_ENGINE', os.environ['ENGINE_DB']),
+        'NAME': os.environ.get('DOC_NAME', os.environ['NAME_DB']),
+        'USER': os.environ.get('DOC_USER', os.environ['USER_DB']),
+        'PASSWORD': os.environ.get('DOC_PASSWORD', os.environ['PASSWORD_DB']),
+        'HOST': os.environ.get('DOC_HOST_DB', os.environ['HOST_DB']),
+        'PORT': os.environ.get('DOC_PORT_DB', os.environ['PORT_DB']),
 
         'TEST': {'NAME': os.path.join(BASE_DIR, "test_db")}
     }

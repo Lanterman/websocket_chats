@@ -9,7 +9,7 @@ This project represents chats in real life and has the following functionality:
 
 Project tested with: TestCase, WebsocketCommunicator, ChannelsLiveServerTestCase.
 
-The project is also parsed with selenium.
+The project is also analyzed by selenium and asynchronous parses.
 
 ### Launch of the project
 
@@ -30,9 +30,13 @@ or
 http://0.0.0.0:8000/
 ```
 
-### Launch of the selenium parser
+### Running parsers
 
-#### 1) Run command
+#### 1) Selenium parser
 ```
 python parsing/parsing_with_selenium.py
+```
+#### 2) Asynchronous parser
+```
+python parsing/asyncio_parser.py
 ```

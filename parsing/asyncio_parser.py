@@ -1,7 +1,5 @@
 import os
 import json
-import random
-import string
 import httpx
 import asyncio
 import fake_useragent
@@ -24,7 +22,7 @@ class Settings:
         self.register_url = os.environ.get("REGISTER_URL")
         self.login_information = {"username": "username", "password": "test_password"}
         self.register_information = {
-            "password1": "test_password", "password2": "test_password",
+            "username": "username", "password1": "test_password", "password2": "test_password",
             "first_name": "test", "last_name": "test", "email": "test_email@example.com"
         }
 
@@ -75,12 +73,6 @@ def set_headers() -> dict:
     return header
 
 
-def create_random_username(length: int = 12) -> str:
-    """Create random username for registration"""
-
-    return "".join(random.choice(string.ascii_letters) for _ in range(length))
-
-
 def create_dict_with_user_info(html: BS) -> dict:
     """Create dict with user info from user profile"""
 
@@ -108,7 +100,7 @@ def get_chat_users(data: str, chat_info: dict) -> dict:
     return chat_info
 
 
-async def authorization(html: BS, session: httpx.AsyncClient) -> BS:
+async def sign_in(session: httpx.AsyncClient, html: BS) -> BS:
     """Authentication and authorization user"""
 
     scrf = html.find(name="input", attrs={"name": "csrfmiddlewaretoken"}).get("value")
@@ -120,18 +112,27 @@ async def authorization(html: BS, session: httpx.AsyncClient) -> BS:
     return html
 
 
-async def registration(html: BS, session: httpx.AsyncClient) -> BS:
+async def sign_on(session: httpx.AsyncClient, html: BS) -> BS:
     """Registration user"""
 
     scrf = html.find(name="input", attrs={"name": "csrfmiddlewaretoken"}).get("value")
-
-    settings.register_information["username"] = create_random_username()
     settings.register_information["csrfmiddlewaretoken"] = scrf
 
     request = await session.post(url=settings.register_url, data=settings.register_information)
     html = BS(request.text, "html.parser")
 
     return html
+
+
+async def authentication(session: httpx.AsyncClient, html: BS) -> BS:
+    """User authentication. If there is no such user, then create it"""
+
+    auth = await sign_in(session, html)
+
+    if auth.find(name="h1", attrs={"id": "title"}) is None:
+        auth = await sign_on(session, html)
+
+    return auth
 
 
 async def fetch(link:str, session: httpx.AsyncClient) -> httpx.Response:
@@ -141,7 +142,7 @@ async def fetch(link:str, session: httpx.AsyncClient) -> httpx.Response:
     return request
 
 
-async def get_user_info(html: BS, session: httpx.AsyncClient) -> dict:
+async def get_user_info(session: httpx.AsyncClient, html: BS) -> dict:
     """Get user info"""
 
     link_to_user_profile = html.find(name="a", attrs={"class": "redirect"}).attrs["href"]
@@ -217,6 +218,18 @@ async def create_task_list_for_parsing_open_chats(session: httpx.AsyncClient, ch
     return asyncio.gather(*task_list)
 
 
+async def parsed(session: httpx.AsyncClient, html: BS) -> dict:
+    """Parses necessary data: user information, private chats and all possible public chat data"""
+
+    user_info = await get_user_info(session, html)
+
+    chats_without_user = await create_task_list_for_parsing_chats(session, html)
+
+    task_list = await create_task_list_for_parsing_open_chats(session, await chats_without_user)
+
+    return {"user_info": user_info, "chat_info_list": await task_list}
+
+
 @info_log
 async def main() -> None:
     """Endpoint"""
@@ -226,18 +239,11 @@ async def main() -> None:
         request = await session.get(url="/")
         html = BS(request.text, "html.parser")
 
-        auth_html = await authorization(html, session)
+        auth_html = await authentication(session, html)  # User authentication
 
-        if auth_html.find(name="h1", attrs={"id": "title"}) is None:
-            auth_html = await registration(html, session)
+        parsed_data = await parsed(session, auth_html)  # Parses necessary data
 
-        user_info = await get_user_info(auth_html, session)
-
-        chats_without_user = await create_task_list_for_parsing_chats(session, auth_html)
-
-        task_list = await create_task_list_for_parsing_open_chats(session, await chats_without_user)
-
-        output_data = collect_dict(user_info, await task_list)
+        output_data = collect_dict(**parsed_data)  # Collects dictionary with required data
 
         write_to_json_file(output_data)
 
